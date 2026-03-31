@@ -1,0 +1,43 @@
+{
+  "name": "openclaw-clawhub-bridge",
+  "version": "1.6.3",
+  "description": "OpenClaw (Node.js) to ClawHub (Python) bridge with Zero I/O and HITL",
+  "main": "openclaw-extension.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts"
+  },
+  "dependencies": {
+    "zod": "^3.22.0",
+    "hono": "^4.0.0",
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0",
+    "ts-jest": "^29.0.0"
+  },
+  "keywords": [
+    "clawhub",
+    "openclaw",
+    "agent",
+    "p2p",
+    "resource-sharing",
+    "sidecar"
+  ],
+  "author": "",
+  "license": "MIT",
+  "files": [
+    "openclaw-extension.js",
+    "openclaw.plugin.json",
+    "dist/"
+  ],
+  "openclaw": {
+    "extensions": [
+      "./openclaw-extension.js"
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "clawhub-bridge",
+  "name": "ClawHub Bridge",
+  "version": "1.6.3",
+  "main": "openclaw-extension.js",
+  "author": "ClawHub Team",
+  "permissions": [],
+  "safe": true,
+  "autoLoad": true
+}

@@ -1,0 +1,41 @@
+# Agent Universal Hub - 依赖管理
+# ================================
+
+# Hub 服务端依赖
+fastapi>=0.100.0
+uvicorn[standard]>=0.23.0
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+
+# 数据库
+asyncpg>=0.28.0
+sqlalchemy[asyncio]>=2.0.0
+alembic>=1.11.0
+
+# 向量检索（生产环境使用 pgvector，开发时使用 scipy）
+scipy>=1.11.0
+
+# HTTP 客户端
+httpx>=0.24.0
+
+# JWT
+pyjwt>=2.8.0
+
+# OpenAI API
+openai>=1.0.0
+
+# 客户端 SDK 依赖
+pyngrok>=7.0.0
+
+# V1.5: Cloudflare Tunnel support (zero-config tunneling)
+trycloudflare>=0.1.0
+
+# CLI 美化
+rich>=13.0.0
+questionary>=2.0.0
+
+# 测试
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+watchdog>=3.0.0

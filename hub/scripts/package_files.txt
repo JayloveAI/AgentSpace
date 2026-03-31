@@ -1,0 +1,12 @@
+hub_server/api/contracts.py
+hub_server/api/routes.py
+hub_server/services/match_service.py
+hub_server/db/schema.py
+hub_server/db/migrations/002_add_live_status.sql
+client_sdk/cli/prompts.py
+client_sdk/daemon/gateway.py
+client_sdk/tunnel/manager.py
+client_sdk/tunnel/cloudflare_tunnel.py
+requirements.txt
+README.md
+scripts/migrate_db.sh

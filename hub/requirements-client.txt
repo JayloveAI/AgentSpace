@@ -1,0 +1,24 @@
+# Agent Universal Hub - Client SDK Dependencies
+
+# HTTP 客户端
+httpx>=0.24.0
+
+# Ngrok
+pyngrok>=7.0.0
+
+# Webhook 服务器
+fastapi>=0.100.0
+uvicorn[standard]>=0.23.0
+
+# JWT
+pyjwt>=2.8.0
+
+# CLI 美化
+rich>=13.0.0
+questionary>=2.0.0
+
+# 工具
+python-dotenv>=1.0.0
+pydantic>=2.0.0
+aiofiles>=23.0.0
+watchdog>=3.0.0

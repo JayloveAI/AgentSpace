@@ -1,0 +1,73 @@
+# Environment files (contain secrets)
+SECRETS.env
+.secrets
+.env
+client.env
+package/.env
+!.env.example
+!client.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+.venv/
+venv/
+
+# Python test cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node.js
+node_modules/
+
+# IDE
+.idea/
+.vscode/
+.trae/
+*.swp
+*.swo
+
+# OS files
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Database files
+*.db
+
+# Logs
+*.log
+
+# Temporary files
+tmp_*.txt
+*.tmp
+*.bak
+
+# Deployment archives
+*.zip
+
+# FRP binaries
+frpc.exe
+frps.exe
+
+# Runtime data
+hub/data/
+
+# Runtime generated identity/token
+.agent_id
+.local_token
+
+# Inventory files (local runtime)
+inventory_map.json
+
+# FRP local config (contains server address)
+frpc.toml
+
+# Archived docs (internal reference, not for upload)
+_docs_archive/

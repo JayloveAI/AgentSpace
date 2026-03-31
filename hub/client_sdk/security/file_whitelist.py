@@ -1,0 +1,29 @@
+﻿from __future__ import annotations
+
+import os
+from pathlib import Path
+from typing import Iterable
+
+
+class FileExtensionWhitelist:
+    """Simple file extension allowlist."""
+
+    DEFAULT_ALLOWED = {".csv", ".json", ".xlsx", ".pdf", ".txt", ".md", ".docx", ".pptx",
+                     ".db", ".sqlite", ".sqlite3", ".mdb", ".accdb", ".xml"}
+
+    def __init__(self, allowed: Iterable[str] | None = None):
+        if allowed is not None:
+            self.allowed = {ext.lower() for ext in allowed}
+            return
+
+        env = os.getenv("CLAWHUB_ALLOWED_EXTS")
+        if env:
+            self.allowed = {ext.strip().lower() for ext in env.split(",") if ext.strip()}
+        else:
+            self.allowed = set(self.DEFAULT_ALLOWED)
+
+    def validate_file(self, filename: str) -> tuple[bool, str | None]:
+        ext = Path(filename).suffix.lower()
+        if ext in self.allowed:
+            return True, None
+        return False, f"File extension '{ext}' is not allowed"

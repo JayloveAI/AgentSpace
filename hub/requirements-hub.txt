@@ -1,0 +1,24 @@
+# Agent Universal Hub - Server Dependencies
+
+# Web 框架
+fastapi>=0.100.0
+uvicorn[standard]>=0.23.0
+
+# 数据库
+sqlalchemy[asyncio]>=2.0.0
+asyncpg>=0.28.0
+psycopg2-binary>=2.9.0
+
+# OpenAI API
+openai>=1.0.0
+
+# JWT
+pyjwt>=2.8.0
+
+# 工具
+python-dotenv>=1.0.0
+pydantic>=2.0.0
+httpx>=0.24.0
+
+# pgvector (需要手动安装，这里只是文档说明)
+# pip install pgvector

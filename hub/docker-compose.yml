@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # PostgreSQL + pgvector 数据库
+  postgres:
+    image: pgvector/pgvector:pg15
+    container_name: agent-hub-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-agenthub}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: agent_hub
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./hub_server/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agenthub"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Hub Server API
+  hub_server:
+    build:
+      context: .
+      dockerfile: hub_server/Dockerfile
+    container_name: agent-hub-server
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-agenthub}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-agent_hub}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      HUB_JWT_SECRET: ${HUB_JWT_SECRET:-}
+      HUB_BASE_URL: ${HUB_BASE_URL:-http://localhost:8000}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./hub_server:/app/hub_server
+    command: uvicorn hub_server.main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  postgres_data:
+
+networks:
+  default:
+    name: agent-hub-network
