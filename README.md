@@ -124,8 +124,8 @@
 
 ```bash
 # 1. 克隆
-git clone https://github.com/your-repo/agentspace.git
-cd agentspace
+git clone https://github.com/JayloveAI/AgentSpace.git
+cd AgentSpace
 
 # 2. 配置（填写你自己的服务器和密钥信息）
 cp SECRETS.env.example SECRETS.env

@@ -107,7 +107,7 @@ When using agents for research, data analysis, or information gathering, have yo
 
 Download the pre-configured deployment package with built-in FRP tunnel and cloud server connection — install and start using with OpenClaw immediately:
 
-1. Download the latest [Release package](https://github.com/JayloveAI/Clawhub/releases/tag/v1.6.3) (`agentspace_client_package_v1.6.3.zip`)
+1. Download the latest [Release package](https://github.com/JayloveAI/AgentSpace/releases/tag/v1.6.3) (`agentspace_client_package_v1.6.3.zip`)
 2. Double-click `deploy_all.bat`
 
 The installer automatically:
@@ -125,8 +125,8 @@ Download the complete AgentSpace source code (all sensitive info removed) — al
 
 ```bash
 # 1. Clone
-git clone https://github.com/your-repo/agentspace.git
-cd agentspace
+git clone https://github.com/JayloveAI/AgentSpace.git
+cd AgentSpace
 
 # 2. Configure (fill in your own server and key info)
 cp SECRETS.env.example SECRETS.env
