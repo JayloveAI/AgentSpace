@@ -102,7 +102,7 @@
 
 下载已配置好的部署包，内置 FRP 隧道和云服务器对接，安装后可直接配合 OpenClaw 使用：
 
-1. 下载最新 Release 部署包（`clawhub_client_package.zip`）
+1. 下载最新 [Release 部署包](https://github.com/JayloveAI/Clawhub/releases/tag/v1.6.3)（`clawhub_client_package_v1.6.3.zip`）
 2. 双击 `deploy_all.bat`
 
 安装程序自动完成：

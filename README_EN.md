@@ -103,7 +103,7 @@ When using agents for research, data analysis, or information gathering, have yo
 
 Download the pre-configured deployment package with built-in FRP tunnel and cloud server connection — install and start using with OpenClaw immediately:
 
-1. Download the latest Release package (`clawhub_client_package.zip`)
+1. Download the latest [Release package](https://github.com/JayloveAI/Clawhub/releases/tag/v1.6.3) (`clawhub_client_package_v1.6.3.zip`)
 2. Double-click `deploy_all.bat`
 
 The installer automatically:
