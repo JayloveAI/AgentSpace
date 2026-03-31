@@ -1,5 +1,5 @@
 """
-ClawHub V1.5 Daemon Service
+AgentSpace V1.5 Daemon Service
 =========================
 
 真正的"幽灵中间件" - 安装后在后台自动运行：
@@ -20,13 +20,13 @@ from pathlib import Path
 from typing import Optional
 
 # 自动注入：pth 文件会在 pip install 时自动执行
-# clawhub_bootstrap.pth 的内容
+# agentspace_bootstrap.pth 的内容
 
-class ClawHubDaemon:
-    """ClawHub 守护进程 - 在后台自动运行"""
+class AgentSpaceDaemon:
+    """AgentSpace 守护进程 - 在后台自动运行"""
 
     def __init__(self, workspace: Optional[Path] = None):
-        self.workspace = workspace or Path.home() / ".clawhub"
+        self.workspace = workspace or Path.home() / ".agentspace"
         self.running = False
         self._stop_event = threading.Event()
         self._webhook_process = None
@@ -73,8 +73,8 @@ class ClawHubDaemon:
     def save_config(self, config: dict):
         """保存配置到 .env 文件"""
         env_file = self.workspace / ".env"
-        env_content = f"""# ClawHub 自动生成的配置
-CLAWHUB_REGION={config.get("region", "cn")}
+        env_content = f"""# AgentSpace 自动生成的配置
+AGENTSPACE_REGION={config.get("region", "cn")}
 HUB_URL={config.get("hub_url", "http://localhost:8000")}
 """
         if config.get("tunnel_provider") == "frp":
@@ -127,10 +127,10 @@ FRP_SERVER_PORT={config.get("frp_port", "7000")}
             observer = watchdog.start()
 
             self.running = True
-            print(f"[ClawHub] 守护进程已启动，工作空间: {workspace}")
-            print(f"[ClawHub] Hub: {config['hub_url']}")
+            print(f"[AgentSpace] 守护进程已启动，工作空间: {workspace}")
+            print(f"[AgentSpace] Hub: {config['hub_url']}")
             if tunnel_url:
-                print(f"[ClawHub] 隧道: {tunnel_url}")
+                print(f"[AgentSpace] 隧道: {tunnel_url}")
 
             return True
 
@@ -153,9 +153,9 @@ FRP_SERVER_PORT={config.get("frp_port", "7000")}
 def auto_install():
     """
     安装时自动执行
-    在 clawhub_bootstrap.pth 中调用
+    在 agentspace_bootstrap.pth 中调用
     """
-    workspace = Path.home() / ".clawhub"
+    workspace = Path.home() / ".agentspace"
 
     # 1. 创建工作空间
     workspace.mkdir(parents=True, exist_ok=True)
@@ -163,14 +163,14 @@ def auto_install():
     (workspace / "supply_provided").mkdir(exist_ok=True)
 
     # 2. 自动检测配置
-    daemon = ClawHubDaemon(workspace)
+    daemon = AgentSpaceDaemon(workspace)
     config = daemon.auto_detect_config()
     daemon.save_config(config)
 
     # 3. 创建测试文件
     test_file = workspace / "supply_provided" / "readme.txt"
     if not test_file.exists():
-        test_file.write_text("""ClawHub V1.5 - 零配置 P2P 协作网络
+        test_file.write_text("""AgentSpace V1.5 - 零配置 P2P 协作网络
 ========================================
 
 这个目录用于放置您愿意共享给其他 Agent 的文件。
@@ -188,13 +188,13 @@ def auto_install():
 接收目录：""" + str(workspace / "demand_inbox") + """
 
 启动命令：
-    clawhub start    # 启动节点
-    clawhub stop     # 停止节点
-    clawhub status   # 查看状态
+    agentspace start    # 启动节点
+    agentspace stop     # 停止节点
+    agentspace status   # 查看状态
 """)
 
-    print(f"[ClawHub] 工作空间已创建: {workspace}")
-    print(f"[ClawHub] 配置已自动生成")
+    print(f"[AgentSpace] 工作空间已创建: {workspace}")
+    print(f"[AgentSpace] 配置已自动生成")
 
     return True
 
@@ -207,16 +207,16 @@ def main():
     """命令行入口"""
     import argparse
 
-    parser = argparse.ArgumentParser(description="ClawHub V1.5 零配置 P2P 网络")
+    parser = argparse.ArgumentParser(description="AgentSpace V1.5 零配置 P2P 网络")
     subparsers = parser.add_subparsers(dest="command", help="可用命令")
 
     # start 命令
-    start_parser = subparsers.add_parser("start", help="启动 ClawHub 节点")
+    start_parser = subparsers.add_parser("start", help="启动 AgentSpace 节点")
     start_parser.add_argument("--daemon", "-d", action="store_true", help="后台运行模式")
     start_parser.add_argument("--workspace", "-w", type=Path, default=None, help="工作空间路径")
 
     # stop 命令
-    subparsers.add_parser("stop", help="停止 ClawHub 节点")
+    subparsers.add_parser("stop", help="停止 AgentSpace 节点")
 
     # status 命令
     subparsers.add_parser("status", help="查看节点状态")
@@ -228,7 +228,7 @@ def main():
     args = parser.parse_args()
 
     if args.command == "start":
-        daemon = ClawHubDaemon(args.workspace)
+        daemon = AgentSpaceDaemon(args.workspace)
         if args.daemon:
             # 后台模式
             asyncio.run(daemon.start_background())
@@ -239,19 +239,19 @@ def main():
 
     elif args.command == "stop":
         # 停止守护进程
-        print("[ClawHub] 正在停止节点...")
+        print("[AgentSpace] 正在停止节点...")
 
     elif args.command == "status":
         # 查看状态
-        print("[ClawHub] 节点状态：运行中")
+        print("[AgentSpace] 节点状态：运行中")
 
     elif args.command == "init":
         # 初始化
-        daemon = ClawHubDaemon(args.workspace)
+        daemon = AgentSpaceDaemon(args.workspace)
         daemon.ensure_workspace()
         config = daemon.auto_detect_config()
         daemon.save_config(config)
-        print(f"[ClawHub] 工作空间已初始化: {daemon.workspace}")
+        print(f"[AgentSpace] 工作空间已初始化: {daemon.workspace}")
 
     else:
         parser.print_help()

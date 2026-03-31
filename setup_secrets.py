@@ -1,5 +1,5 @@
 """
-ClawHub 一键配置脚本
+AgentSpace 一键配置脚本
 ===================
 读取 SECRETS.env，自动写入所有组件的配置文件。
 
@@ -80,7 +80,7 @@ OPENAI_EMBEDDING_MODEL={secrets.get('OPENAI_EMBEDDING_MODEL', 'text-embedding-ad
 # Client
 LOCAL_PORT={secrets.get('LOCAL_PORT', '8000')}
 IDENTITY_PATH=identity.md
-CLAWHUB_REGION={secrets.get('CLAWHUB_REGION', 'cn')}
+AGENTSPACE_REGION={secrets.get('AGENTSPACE_REGION', 'cn')}
 TUNNEL_PROVIDER={secrets.get('TUNNEL_PROVIDER', 'frp')}
 
 # FRP
@@ -113,7 +113,7 @@ HUB_URL={hub_url}
 HUB_JWT_SECRET={secrets.get('HUB_JWT_SECRET', '')}
 LOCAL_PORT={secrets.get('LOCAL_PORT', '8000')}
 LOCAL_HOST={secrets.get('LOCAL_HOST', '127.0.0.1')}
-CLAWHUB_REGION={secrets.get('CLAWHUB_REGION', 'cn')}
+AGENTSPACE_REGION={secrets.get('AGENTSPACE_REGION', 'cn')}
 TUNNEL_PROVIDER={secrets.get('TUNNEL_PROVIDER', 'frp')}
 NGROK_AUTHTOKEN={secrets.get('NGROK_AUTHTOKEN', '')}
 NGROK_REGION={secrets.get('NGROK_REGION', 'us')}
@@ -171,7 +171,7 @@ HUB_BASE_URL={secrets.get('HUB_BASE_URL', 'http://localhost:8000')}
 
 def main():
     print("=" * 60)
-    print("  ClawHub 一键配置")
+    print("  AgentSpace 一键配置")
     print("=" * 60)
 
     # 1. 读取

@@ -26,12 +26,12 @@ def generate_config(
     skills_root: Optional[Path | str] = None
 ) -> dict:
     """
-    Generate clawhub_config.yaml (JSON-compatible YAML).
+    Generate agentspace_config.yaml (JSON-compatible YAML).
 
     - local_skills: scanned from skills_root
     - mcp_servers: from MCP_SERVERS env (comma-separated)
     """
-    workspace = Path(workspace_dir).expanduser() if workspace_dir else (Path.home() / ".clawhub")
+    workspace = Path(workspace_dir).expanduser() if workspace_dir else (Path.home() / ".agentspace")
     workspace.mkdir(parents=True, exist_ok=True)
 
     skills_root_path = Path(skills_root) if skills_root else (Path.cwd() / "skills")
@@ -46,7 +46,7 @@ def generate_config(
         "mcp_servers": mcp_servers,
     }
 
-    config_path = workspace / "clawhub_config.yaml"
+    config_path = workspace / "agentspace_config.yaml"
     config_path.write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
 
     return config

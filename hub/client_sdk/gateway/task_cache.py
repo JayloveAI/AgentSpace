@@ -74,7 +74,7 @@ class TaskCache:
     - user_id support for multi-user scenarios
     """
 
-    CACHE_DIR = Path.home() / ".clawhub" / "task_cache"
+    CACHE_DIR = Path.home() / ".agentspace" / "task_cache"
     MAX_PENDING_TASKS = 5000  # 安全阀：每个用户最多 5000 个待处理
 
     # ⚠️ 内存索引：O(1) 查询，拒绝每次扫盘
@@ -86,7 +86,7 @@ class TaskCache:
         Initialize the task cache.
 
         Args:
-            cache_dir: Custom cache directory. Defaults to ~/.clawhub/task_cache.
+            cache_dir: Custom cache directory. Defaults to ~/.agentspace/task_cache.
         """
         self._cache_dir = cache_dir or self.CACHE_DIR
         self._cache_dir.mkdir(parents=True, exist_ok=True)

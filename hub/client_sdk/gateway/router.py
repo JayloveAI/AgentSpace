@@ -19,10 +19,10 @@ def _get_agent_id() -> str | None:
     """
     读取本地 agent_id（网络层身份，上云用）
 
-    agent_id 存储在 ~/.clawhub/.agent_id，用于云端匹配和 P2P 通信。
+    agent_id 存储在 ~/.agentspace/.agent_id，用于云端匹配和 P2P 通信。
     与 user_id（业务层身份，仅本地）区分。
     """
-    agent_id_file = Path.home() / ".clawhub" / ".agent_id"
+    agent_id_file = Path.home() / ".agentspace" / ".agent_id"
     try:
         return agent_id_file.read_text(encoding="utf-8").strip()
     except Exception:
@@ -40,7 +40,7 @@ class UniversalResourceGateway:
     """
 
     def __init__(self, config_path: Path | None = None):
-        self.config = self._load_clawhub_config(config_path)
+        self.config = self._load_agentspace_config(config_path)
         self._delivery_events: dict[str, asyncio.Event] = {}
         self._delivery_results: dict[str, str] = {}
         self._sender = P2PSender()
@@ -288,12 +288,12 @@ class UniversalResourceGateway:
             self._delivery_results[demand_id] = file_path
             self._delivery_events[demand_id].set()
 
-    def _load_clawhub_config(self, config_path: Path | None) -> dict:
-        """Load config from clawhub_config.yaml or .env file."""
+    def _load_agentspace_config(self, config_path: Path | None) -> dict:
+        """Load config from agentspace_config.yaml or .env file."""
         config = {}
 
         # Try YAML/JSON config first
-        yaml_path = config_path or (Path.home() / ".clawhub" / "clawhub_config.yaml")
+        yaml_path = config_path or (Path.home() / ".agentspace" / "agentspace_config.yaml")
         if yaml_path.exists():
             try:
                 text = yaml_path.read_text(encoding="utf-8")
@@ -302,7 +302,7 @@ class UniversalResourceGateway:
                 pass
 
         # Also load from .env file (supports PUBLIC_TUNNEL_URL)
-        env_path = Path.home() / ".clawhub" / ".env"
+        env_path = Path.home() / ".agentspace" / ".env"
         if env_path.exists():
             try:
                 env_text = env_path.read_text(encoding="utf-8")

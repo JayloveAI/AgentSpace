@@ -1,12 +1,12 @@
-﻿# ClawHub Deployment Verification Script
+﻿# AgentSpace Deployment Verification Script
 # -*- coding: utf-8 -*-
-# Run this script to verify your ClawHub installation
+# Run this script to verify your AgentSpace installation
 
 $ErrorActionPreference = "Continue"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 Write-Host "============================================" -ForegroundColor Cyan
-Write-Host "  ClawHub Deployment Verification" -ForegroundColor Cyan
+Write-Host "  AgentSpace Deployment Verification" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -25,30 +25,30 @@ if ($python) {
 }
 
 # [2] Check SDK
-Write-Host "[2] Checking ClawHub SDK..." -ForegroundColor Yellow
-$sdk = pip show clawhub-sdk 2>$null
+Write-Host "[2] Checking AgentSpace SDK..." -ForegroundColor Yellow
+$sdk = pip show agentspace-sdk 2>$null
 if ($sdk) {
     $version = ($sdk | Select-String "Version:").ToString().Replace("Version:", "").Trim()
-    Write-Host "    OK: clawhub-sdk $version" -ForegroundColor Green
+    Write-Host "    OK: agentspace-sdk $version" -ForegroundColor Green
 } else {
-    Write-Host "    FAIL: clawhub-sdk not installed" -ForegroundColor Red
+    Write-Host "    FAIL: agentspace-sdk not installed" -ForegroundColor Red
     $errors += "SDK"
 }
 
 # [3] Check CLI
-Write-Host "[3] Checking clawhub CLI..." -ForegroundColor Yellow
-$cli = Get-Command clawhub -ErrorAction SilentlyContinue
+Write-Host "[3] Checking agentspace CLI..." -ForegroundColor Yellow
+$cli = Get-Command agentspace -ErrorAction SilentlyContinue
 if ($cli) {
-    Write-Host "    OK: clawhub command available" -ForegroundColor Green
+    Write-Host "    OK: agentspace command available" -ForegroundColor Green
     Write-Host "         Location: $($cli.Source)" -ForegroundColor Cyan
 } else {
-    Write-Host "    FAIL: clawhub command not in PATH" -ForegroundColor Red
+    Write-Host "    FAIL: agentspace command not in PATH" -ForegroundColor Red
     $errors += "CLI"
 }
 
 # [4] Check FRP
 Write-Host "[4] Checking FRP client..." -ForegroundColor Yellow
-$frpcExe = Join-Path $env:USERPROFILE ".clawhub\frp\frpc.exe"
+$frpcExe = Join-Path $env:USERPROFILE ".agentspace\frp\frpc.exe"
 if (Test-Path $frpcExe) {
     Write-Host "    OK: frpc.exe installed" -ForegroundColor Green
     Write-Host "         Location: $frpcExe" -ForegroundColor Cyan
@@ -59,7 +59,7 @@ if (Test-Path $frpcExe) {
 
 # [5] Check FRP Configuration
 Write-Host "[5] Checking FRP configuration..." -ForegroundColor Yellow
-$frpcIni = Join-Path $env:USERPROFILE ".clawhub\frp\frpc.ini"
+$frpcIni = Join-Path $env:USERPROFILE ".agentspace\frp\frpc.ini"
 if (Test-Path $frpcIni) {
     $frpConfig = Get-Content $frpcIni -Raw
     if ($frpConfig -match "token = your-frp-token-here") {
@@ -81,7 +81,7 @@ if (Test-Path $frpcIni) {
 
 # [6] Check .env
 Write-Host "[6] Checking .env configuration..." -ForegroundColor Yellow
-$envFile = Join-Path $env:USERPROFILE ".clawhub\.env"
+$envFile = Join-Path $env:USERPROFILE ".agentspace\.env"
 if (Test-Path $envFile) {
     $envContent = Get-Content $envFile -Raw
     Write-Host "    OK: .env file exists" -ForegroundColor Green
@@ -100,7 +100,7 @@ if (Test-Path $envFile) {
 
 # [7] Check Agent ID
 Write-Host "[7] Checking Agent ID..." -ForegroundColor Yellow
-$agentIdFile = Join-Path $env:USERPROFILE ".clawhub\.agent_id"
+$agentIdFile = Join-Path $env:USERPROFILE ".agentspace\.agent_id"
 if (Test-Path $agentIdFile) {
     $agentId = Get-Content $agentIdFile -Raw
     $agentId = $agentId.Trim()
@@ -112,7 +112,7 @@ if (Test-Path $agentIdFile) {
 
 # [8] Check auto_setup.conf
 Write-Host "[8] Checking auto_setup.conf..." -ForegroundColor Yellow
-$autoSetupFile = Join-Path $env:USERPROFILE ".clawhub\auto_setup.conf"
+$autoSetupFile = Join-Path $env:USERPROFILE ".agentspace\auto_setup.conf"
 if (Test-Path $autoSetupFile) {
     Write-Host "    OK: auto_setup.conf exists (OpenClaw integration enabled)" -ForegroundColor Green
 } else {
@@ -126,9 +126,9 @@ $nodeVersion = node --version 2>$null
 if ($LASTEXITCODE -eq 0) {
     Write-Host "    Node.js: $nodeVersion" -ForegroundColor Cyan
 
-    $bridge = npm list -g openclaw-clawhub-bridge 2>$null
-    if ($bridge -match "openclaw-clawhub-bridge") {
-        Write-Host "    OK: openclaw-clawhub-bridge installed" -ForegroundColor Green
+    $bridge = npm list -g openclaw-agentspace-bridge 2>$null
+    if ($bridge -match "openclaw-agentspace-bridge") {
+        Write-Host "    OK: openclaw-agentspace-bridge installed" -ForegroundColor Green
     } else {
         Write-Host "    WARN: Node.js bridge not installed (optional)" -ForegroundColor Yellow
         $warnings += "Node.js Bridge"
@@ -140,9 +140,9 @@ if ($LASTEXITCODE -eq 0) {
 
 # [10] Check workspace directories
 Write-Host "[10] Checking workspace directories..." -ForegroundColor Yellow
-$clawhubDir = Join-Path $env:USERPROFILE ".clawhub"
-$supplyDir = Join-Path $clawhubDir "supply_provided"
-$demandDir = Join-Path $clawhubDir "demand_inbox"
+$agentspaceDir = Join-Path $env:USERPROFILE ".agentspace"
+$supplyDir = Join-Path $agentspaceDir "supply_provided"
+$demandDir = Join-Path $agentspaceDir "demand_inbox"
 
 $dirsOk = $true
 if (Test-Path $supplyDir) {
@@ -214,8 +214,8 @@ if ($errors.Count -eq 0) {
     }
 
     Write-Host ""
-    Write-Host "  Ready to start: clawhub start" -ForegroundColor White
-    Write-Host "  Or run: .\start_clawhub_node.ps1" -ForegroundColor White
+    Write-Host "  Ready to start: agentspace start" -ForegroundColor White
+    Write-Host "  Or run: .\start_agentspace_node.ps1" -ForegroundColor White
 } else {
     Write-Host "  [FAIL] Found $($errors.Count) error(s):" -ForegroundColor Red
     foreach ($e in $errors) {

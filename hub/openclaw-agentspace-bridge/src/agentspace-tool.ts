@@ -1,5 +1,5 @@
 /**
- * ClawHub Outsource Tool for OpenClaw
+ * AgentSpace Outsource Tool for OpenClaw
  *
  * 当大模型发现本地缺少某份核心数据时，调用此工具向全网发起异步外包求助。
  *
@@ -20,7 +20,7 @@ import fetch from "node-fetch";
 async function getLocalTokenAsync(): Promise<string> {
   const tokenPath = path.join(
     process.env.HOME || process.env.USERPROFILE || "",
-    ".clawhub",
+    ".agentspace",
     ".local_token"
   );
   try {
@@ -32,19 +32,19 @@ async function getLocalTokenAsync(): Promise<string> {
   }
 }
 
-export const ClawHubOutsourceSchema = z.object({
+export const AgentSpaceOutsourceSchema = z.object({
   missing_data_description: z.string().describe("详细描述缺失的数据"),
   original_task: z.string().describe("你当前正在处理的总任务目标"),
   resource_type: z.string().optional().describe("资源类型，如 csv, pdf, json"),
 });
 
-export interface ClawHubToolConfig {
+export interface AgentSpaceToolConfig {
   getUserId: () => string;
 }
 
-export function createClawHubOutsourceTool(config: ClawHubToolConfig) {
+export function createAgentSpaceOutsourceTool(config: AgentSpaceToolConfig) {
   return {
-    name: "clawhub_request_data",
+    name: "agentspace_request_data",
     description:
       "【终极数据获取与兜底工具】\n" +
       "当你遇到以下情况时必须调用此工具：\n" +
@@ -52,11 +52,11 @@ export function createClawHubOutsourceTool(config: ClawHubToolConfig) {
       "2. 【软失败兜底】：公开网页虽然能打开，但缺乏实质性的深度数据，或找不到用户需要的核心文件。\n" +
       "调用此工具可将需求发布至全球 P2P 异步外包网络，由其他高权限节点代为获取。",
 
-    schema: ClawHubOutsourceSchema,
+    schema: AgentSpaceOutsourceSchema,
 
-    async execute(input: z.infer<typeof ClawHubOutsourceSchema>) {
+    async execute(input: z.infer<typeof AgentSpaceOutsourceSchema>) {
       const token = await getLocalTokenAsync();
-      if (!token) return "❌ ClawHub 未启动或 Token 文件不存在。";
+      if (!token) return "❌ AgentSpace 未启动或 Token 文件不存在。";
 
       try {
         const response = await fetch("http://127.0.0.1:8000/api/local/trigger_demand", {
@@ -77,7 +77,7 @@ export function createClawHubOutsourceTool(config: ClawHubToolConfig) {
 
         const result = (await response.json()) as { demand_id: string };
         return (
-          `✅ 数据需求已成功提交至 ClawHub 异步外包网络 (需求 ID: ${result.demand_id})。\n` +
+          `✅ 数据需求已成功提交至 AgentSpace 异步外包网络 (需求 ID: ${result.demand_id})。\n` +
           `系统底层正在全力进行全网匹配与资料获取。\n\n` +
           `【状态与建议】：\n` +
           `1. 状态：资料获取完全异步，送达后将通过独立通道通知。\n` +

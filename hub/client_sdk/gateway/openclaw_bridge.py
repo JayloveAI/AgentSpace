@@ -24,7 +24,7 @@ class OpenClawBridge:
     The bridge automatically detects available methods and uses the best option.
     """
 
-    NOTIFICATION_DIR = Path.home() / ".clawhub" / "notifications"
+    NOTIFICATION_DIR = Path.home() / ".agentspace" / "notifications"
 
     def __init__(self, notification_dir: Optional[Path] = None):
         """
@@ -66,7 +66,7 @@ class OpenClawBridge:
             return webhook_url
 
         # Check config file
-        config_file = Path.home() / ".clawhub" / "config.yaml"
+        config_file = Path.home() / ".agentspace" / "config.yaml"
         if config_file.exists():
             try:
                 import yaml
@@ -259,7 +259,7 @@ class OpenClawBridge:
                 await openclaw.send_system_message(
                     role="system",
                     content=message,
-                    source="clawhub",
+                    source="agentspace",
                 )
                 return True
             elif hasattr(openclaw, "notify"):
@@ -289,7 +289,7 @@ class OpenClawBridge:
                     self._webhook_url,
                     json={
                         "type": "resource_delivery",
-                        "source": "clawhub",
+                        "source": "agentspace",
                         "message": message,
                         "timestamp": datetime.utcnow().isoformat(),
                     },

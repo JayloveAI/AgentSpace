@@ -41,7 +41,7 @@ def set_gateway_instance(gateway):
 def _generate_local_token() -> str:
     """生成动态 Token 并写入文件"""
     token = secrets.token_hex(32)
-    token_file = Path.home() / ".clawhub" / ".local_token"
+    token_file = Path.home() / ".agentspace" / ".local_token"
     token_file.parent.mkdir(parents=True, exist_ok=True)
     token_file.write_text(token)
     return token
@@ -194,7 +194,7 @@ class WebhookServer:
 
         @self.app.post("/api/p2p/address")
         async def p2p_address_request(request: P2PAddressRequest):
-            inventory_file = Path.home() / ".clawhub" / "inventory_map.json"
+            inventory_file = Path.home() / ".agentspace" / "inventory_map.json"
             if not inventory_file.exists():
                 return {"matched_files": [], "total_count": 0}
 
@@ -230,7 +230,7 @@ class WebhookServer:
             import urllib.parse
 
             whitelist = FileExtensionWhitelist()
-            inbox_dir = Path.home() / ".clawhub" / "demand_inbox"
+            inbox_dir = Path.home() / ".agentspace" / "demand_inbox"
             inbox_dir.mkdir(parents=True, exist_ok=True)
 
             demand_id = request.demand_id
@@ -322,7 +322,7 @@ class WebhookServer:
                 }
 
                 # 2. 从本地找到要发送的文件
-                supply_dir = Path.home() / ".clawhub" / "supply_provided"
+                supply_dir = Path.home() / ".agentspace" / "supply_provided"
 
                 # ⚠️ 安全修正：根据 demand_id 推断 resource_type 并匹配文件
                 # 简化实现：从 demand_id 提取资源类型，或使用默认值

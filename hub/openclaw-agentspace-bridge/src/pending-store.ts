@@ -1,5 +1,5 @@
 /**
- * Pending Confirmation Store for OpenClaw-ClawHub Bridge
+ * Pending Confirmation Store for OpenClaw-AgentSpace Bridge
  *
  * V1.6 特性：
  * - 互斥锁队列：防止异步并发写覆盖
@@ -25,7 +25,7 @@ export interface DeliveryNotification {
 
 const PENDING_DIR = path.join(
   process.env.HOME || process.env.USERPROFILE || "",
-  ".clawhub",
+  ".agentspace",
   "pending_confirmations"
 );
 

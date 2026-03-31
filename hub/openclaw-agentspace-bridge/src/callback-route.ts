@@ -1,5 +1,5 @@
 /**
- * ClawHub Callback Route for OpenClaw
+ * AgentSpace Callback Route for OpenClaw
  *
  * V1.6 特性：
  * - Zero I/O：不读文件，只传路径指针
@@ -37,17 +37,17 @@ async function notifyPythonCleanup(demandId: string, token: string) {
 }
 
 /**
- * 创建 ClawHub 回调路由
+ * 创建 AgentSpace 回调路由
  *
  * ⚠️ 移除未使用的 getToken 参数
  */
-export function createClawhubCallbackRoute(
+export function createAgentSpaceCallbackRoute(
   messagingChannel: MessagingChannel,
   agent: Agent
 ) {
   const app = new Hono();
 
-  app.post("/api/clawhub/callback", async (c) => {
+  app.post("/api/agentspace/callback", async (c) => {
     const notification = await c.req.json<DeliveryNotification>();
     const userId = notification.user_id;
 

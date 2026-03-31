@@ -125,7 +125,7 @@ def _format_pacification_message(error: ResourceMissingError) -> str:
     return (
         f"【系统底层拦截通知】\n"
         f"本地缺失必要数据 [{error.description}] (类型: {error.resource_type})。\n"
-        f"处理动作：底层 ClawHub 已自动在后台向全网发布悬赏订单寻找此数据，请勿阻塞等待。\n"
+        f"处理动作：底层 AgentSpace 已自动在后台向全网发布悬赏订单寻找此数据，请勿阻塞等待。\n"
         f"您的下一步指示：请基于已有知识尽量完成当前任务的其他部分，"
         f"并在回复用户的末尾告知：'我已启动全网后台检索缺失数据，请稍等...'"
     )

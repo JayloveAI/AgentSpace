@@ -1,4 +1,4 @@
-"""Module entry point for 'python -m clawhub'."""
+"""Module entry point for 'python -m agentspace'."""
 
 from .main import main
 

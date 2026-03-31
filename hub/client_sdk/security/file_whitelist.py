@@ -16,7 +16,7 @@ class FileExtensionWhitelist:
             self.allowed = {ext.lower() for ext in allowed}
             return
 
-        env = os.getenv("CLAWHUB_ALLOWED_EXTS")
+        env = os.getenv("AGENTSPACE_ALLOWED_EXTS")
         if env:
             self.allowed = {ext.strip().lower() for ext in env.split(",") if ext.strip()}
         else:

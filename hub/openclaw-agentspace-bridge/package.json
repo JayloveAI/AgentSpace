@@ -1,7 +1,7 @@
 {
-  "name": "openclaw-clawhub-bridge",
+  "name": "openclaw-agentspace-bridge",
   "version": "1.6.3",
-  "description": "OpenClaw (Node.js) to ClawHub (Python) bridge with Zero I/O and HITL",
+  "description": "OpenClaw (Node.js) to AgentSpace (Python) bridge with Zero I/O and HITL",
   "main": "openclaw-extension.js",
   "scripts": {
     "build": "tsc",
@@ -21,7 +21,7 @@
     "ts-jest": "^29.0.0"
   },
   "keywords": [
-    "clawhub",
+    "agentspace",
     "openclaw",
     "agent",
     "p2p",

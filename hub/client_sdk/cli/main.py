@@ -1,7 +1,7 @@
-"""ClawHub CLI - Zero-config command-line interface.
+"""AgentSpace CLI - Zero-config command-line interface.
 
-This module provides the clawhub init and clawhub start commands for
-setting up and running a ClawHub node with zero configuration.
+This module provides the agentspace init and agentspace start commands for
+setting up and running an AgentSpace node with zero configuration.
 """
 
 from __future__ import annotations
@@ -36,7 +36,7 @@ from ..tunnel.manager import TunnelManager
 @click.group()
 @click.version_option(version="1.6.0")
 def cli() -> None:
-    """ClawHub V1.6 - Zero-Config P2P Agent Collaboration Network."""
+    """AgentSpace V1.6 - Zero-Config P2P Agent Collaboration Network."""
     pass
 
 
@@ -44,7 +44,7 @@ def cli() -> None:
 def version() -> None:
     """显示版本和安装路径信息。"""
     import client_sdk
-    click.echo(f"ClawHub SDK 版本: 1.6.0")
+    click.echo(f"AgentSpace SDK 版本: 1.6.0")
     click.echo(f"代码路径: {client_sdk.__file__}")
 
     # 检查是否为 editable 安装
@@ -52,7 +52,7 @@ def version() -> None:
     try:
         import subprocess
         result = subprocess.run(
-            [sys.executable, "-m", "pip", "show", "clawhub-sdk"],
+            [sys.executable, "-m", "pip", "show", "agentspace-sdk"],
             capture_output=True, text=True
         )
         for line in result.stdout.split("\n"):
@@ -64,11 +64,11 @@ def version() -> None:
 
 @cli.command()
 def stop() -> None:
-    """停止运行中的 ClawHub 服务。"""
+    """停止运行中的 AgentSpace 服务。"""
     import subprocess
 
-    workspace = Path.home() / ".clawhub"
-    pid_file = workspace / ".clawhub.pid"
+    workspace = Path.home() / ".agentspace"
+    pid_file = workspace / ".agentspace.pid"
 
     # 检查 PID 文件
     if pid_file.exists():
@@ -84,38 +84,38 @@ def stop() -> None:
         finally:
             pid_file.unlink(missing_ok=True)
 
-    # 强制终止所有 clawhub 进程
+    # 强制终止所有 agentspace 进程
     if sys.platform == "win32":
         result = subprocess.run(
-            ["taskkill", "/F", "/IM", "clawhub.exe"],
+            ["taskkill", "/F", "/IM", "agentspace.exe"],
             capture_output=True, text=True
         )
         if "SUCCESS" in result.stdout or "成功" in result.stdout:
-            click.echo("✓ 已强制停止 clawhub.exe 进程")
+            click.echo("✓ 已强制停止 agentspace.exe 进程")
         elif "not found" in result.stderr.lower() or "未找到" in result.stderr:
-            click.echo("没有运行中的 clawhub 进程")
+            click.echo("没有运行中的 agentspace 进程")
     else:
         result = subprocess.run(
-            ["pkill", "-f", "clawhub"],
+            ["pkill", "-f", "agentspace"],
             capture_output=True, text=True
         )
         if result.returncode == 0:
-            click.echo("✓ 已停止 clawhub 进程")
+            click.echo("✓ 已停止 agentspace 进程")
         else:
-            click.echo("没有运行中的 clawhub 进程")
+            click.echo("没有运行中的 agentspace 进程")
 
 
 @cli.command()
 @click.option("--port", default=8000, help="Webhook 服务端口")
 @click.option("--remote", is_flag=True, help="检查云端 Hub 连接")
 def check(port: int, remote: bool) -> None:
-    """检查 ClawHub 服务健康状态和端点可用性。"""
+    """检查 AgentSpace 服务健康状态和端点可用性。"""
     import httpx
 
     base_url = f"http://localhost:{port}"
 
     # 读取本地 token
-    token_file = Path.home() / ".clawhub" / ".local_token"
+    token_file = Path.home() / ".agentspace" / ".local_token"
     token = token_file.read_text().strip() if token_file.exists() else ""
 
     endpoints = [
@@ -125,7 +125,7 @@ def check(port: int, remote: bool) -> None:
         ("/api/p2p/address", "POST", {"tags": []}, "P2P 地址"),
     ]
 
-    click.echo(f"🔍 检查 ClawHub 服务 (端口 {port})\n")
+    click.echo(f"🔍 检查 AgentSpace 服务 (端口 {port})\n")
 
     all_ok = True
     for path, method, body, desc in endpoints:
@@ -186,25 +186,25 @@ def check(port: int, remote: bool) -> None:
     "--workspace",
     type=click.Path(path_type=Path),
     default=None,
-    help="Custom workspace path (default: ~/.clawhub)",
+    help="Custom workspace path (default: ~/.agentspace)",
 )
 def init(region: str, workspace: Path | None) -> None:
     """
-    Initialize ClawHub workspace with zero-config setup.
+    Initialize AgentSpace workspace with zero-config setup.
 
     This command:
     - Creates the workspace directory structure
     - Sets up region configuration in .env
     - Runs DiscoveryRadar to scan for local skills
-    - Generates clawhub_config.yaml snapshot
+    - Generates agentspace_config.yaml snapshot
     """
     # Determine workspace path
     if workspace is None:
-        workspace = Path.home() / ".clawhub"
+        workspace = Path.home() / ".agentspace"
     else:
         workspace = workspace.expanduser()
 
-    click.echo(f"🚀 Initializing ClawHub workspace at: {workspace}")
+    click.echo(f"🚀 Initializing AgentSpace workspace at: {workspace}")
 
     # Create directory structure
     workspace.mkdir(parents=True, exist_ok=True)
@@ -225,11 +225,11 @@ def init(region: str, workspace: Path | None) -> None:
         hub_url = "https://hub.clawhub.dev"
         frp_server = "hub.clawhub.dev"
 
-    env_content = f"""# ClawHub Configuration
-# Generated by clawhub init
+    env_content = f"""# AgentSpace Configuration
+# Generated by agentspace init
 
 # Region: {region.upper()}
-CLAWHUB_REGION={region}
+AGENTSPACE_REGION={region}
 HUB_URL={hub_url}
 
 # FRP Tunnel Configuration
@@ -249,7 +249,7 @@ FRP_TOKEN={os.getenv('FRP_TOKEN', '')}
     # Run DiscoveryRadar to scan for skills
     click.echo("🔡 Scanning for local skills...")
 
-    radar = DiscoveryRadar(project_root=Path.cwd(), config_path=workspace / "clawhub_config.yaml")
+    radar = DiscoveryRadar(project_root=Path.cwd(), config_path=workspace / "agentspace_config.yaml")
     result = radar.scan_and_save()
 
     skills_count = result.get("skills_count", 0)
@@ -268,11 +268,11 @@ FRP_TOKEN={os.getenv('FRP_TOKEN', '')}
     if errors:
         click.echo(f"⚠️  Scan completed with {len(errors)} error(s)")
 
-    click.echo(f"\n🎉 ClawHub initialized successfully!")
+    click.echo(f"\n🎉 AgentSpace initialized successfully!")
     click.echo(f"\nNext steps:")
-    click.echo(f"   1. Review your skills in: {workspace / 'clawhub_config.yaml'}")
+    click.echo(f"   1. Review your skills in: {workspace / 'agentspace_config.yaml'}")
     click.echo(f"   2. Place files to share in: {workspace / 'supply_provided'}")
-    click.echo(f"   3. Run 'clawhub start' to begin listening for P2P requests")
+    click.echo(f"   3. Run 'agentspace start' to begin listening for P2P requests")
 
 
 @cli.command()
@@ -280,7 +280,7 @@ FRP_TOKEN={os.getenv('FRP_TOKEN', '')}
     "--workspace",
     type=click.Path(path_type=Path),
     default=None,
-    help="Custom workspace path (default: ~/.clawhub)",
+    help="Custom workspace path (default: ~/.agentspace)",
 )
 @click.option(
     "--no-tunnel",
@@ -301,7 +301,7 @@ FRP_TOKEN={os.getenv('FRP_TOKEN', '')}
 )
 def start(workspace: Path | None, no_tunnel: bool, daemon: bool, force: bool) -> None:
     """
-    Start ClawHub node with demand-driven file transfer.
+    Start AgentSpace node with demand-driven file transfer.
 
     This command:
     - Runs DiscoveryRadar to update skill snapshot
@@ -313,12 +313,12 @@ def start(workspace: Path | None, no_tunnel: bool, daemon: bool, force: bool) ->
     """
     # Determine workspace path
     if workspace is None:
-        workspace = Path.home() / ".clawhub"
+        workspace = Path.home() / ".agentspace"
     else:
         workspace = workspace.expanduser()
 
     # === PID 管理：检查是否已有实例运行 ===
-    pid_file = workspace / ".clawhub.pid"
+    pid_file = workspace / ".agentspace.pid"
 
     # --force 选项：自动停止旧进程
     if force and pid_file.exists():
@@ -337,11 +337,11 @@ def start(workspace: Path | None, no_tunnel: bool, daemon: bool, force: bool) ->
         finally:
             pid_file.unlink(missing_ok=True)
 
-        # Windows: 额外强制终止 clawhub.exe
+        # Windows: 额外强制终止 agentspace.exe
         if sys.platform == "win32":
-            subprocess.run(["taskkill", "/F", "/IM", "clawhub.exe"],
+            subprocess.run(["taskkill", "/F", "/IM", "agentspace.exe"],
                          capture_output=True)
-            click.echo("   ✓ 已强制终止 clawhub.exe")
+            click.echo("   ✓ 已强制终止 agentspace.exe")
 
     if pid_file.exists():
         try:
@@ -350,9 +350,9 @@ def start(workspace: Path | None, no_tunnel: bool, daemon: bool, force: bool) ->
             import signal
             try:
                 os.kill(old_pid, 0)  # 信号 0 不会杀死进程，只检查是否存在
-                click.echo(f"❌ ClawHub 已在运行 (PID: {old_pid})")
-                click.echo("   如需重启，请先运行: clawhub stop")
-                click.echo("   或使用: clawhub start --force")
+                click.echo(f"❌ AgentSpace 已在运行 (PID: {old_pid})")
+                click.echo("   如需重启，请先运行: agentspace stop")
+                click.echo("   或使用: agentspace start --force")
                 return
             except (OSError, ProcessLookupError):
                 # 进程不存在，删除旧的 PID 文件
@@ -395,8 +395,8 @@ def start(workspace: Path | None, no_tunnel: bool, daemon: bool, force: bool) ->
             region = "cn"
             hub_url = "http://localhost:8000"
 
-        env_content = f"""# ClawHub 自动生成的配置
-CLAWHUB_REGION={region}
+        env_content = f"""# AgentSpace 自动生成的配置
+AGENTSPACE_REGION={region}
 HUB_URL={hub_url}
 TUNNEL_PROVIDER=frp
 FRP_SERVER_ADDR=localhost
@@ -428,8 +428,8 @@ FRP_EXECUTABLE=frpc
                 region = "cn"
                 hub_url = "http://localhost:8000"
 
-            env_content = f"""# ClawHub 自动生成的配置
-CLAWHUB_REGION={region}
+            env_content = f"""# AgentSpace 自动生成的配置
+AGENTSPACE_REGION={region}
 HUB_URL={hub_url}
 TUNNEL_PROVIDER=frp
 FRP_SERVER_ADDR=localhost
@@ -445,7 +445,7 @@ FRP_EXECUTABLE=frpc
     from dotenv import load_dotenv
     load_dotenv(env_file, encoding="utf-8")
 
-    click.echo(f"🟢 Starting ClawHub node...")
+    click.echo(f"🟢 Starting AgentSpace node...")
     click.echo(f"   Workspace: {workspace}")
 
     # Show tunnel configuration
@@ -454,7 +454,7 @@ FRP_EXECUTABLE=frpc
 
     # Update skill snapshot
     click.echo("🔡 Updating skill snapshot...")
-    radar = DiscoveryRadar(project_root=Path.cwd(), config_path=workspace / "clawhub_config.yaml")
+    radar = DiscoveryRadar(project_root=Path.cwd(), config_path=workspace / "agentspace_config.yaml")
     result = radar.scan_and_save()
     skills_count = result.get("skills_count", 0)
     click.echo(f"   Found {skills_count} skill(s)")
@@ -556,7 +556,7 @@ FRP_EXECUTABLE=frpc
     # Start watchdog observer
     observer = watchdog.start()
 
-    click.echo("\n✅ ClawHub node is running")
+    click.echo("\n✅ AgentSpace node is running")
     click.echo("   Press Ctrl+C to stop\n")
 
     # ⚠️ 关键修复：在后台线程中运行事件循环，处理异步任务
@@ -576,7 +576,7 @@ FRP_EXECUTABLE=frpc
         watchdog.stop()
         if tunnel_url:
             click.echo("   Tunnel closed")
-        click.echo("✅ ClawHub node stopped")
+        click.echo("✅ AgentSpace node stopped")
     finally:
         loop.close()
         # 清理 PID 文件
@@ -597,7 +597,7 @@ def _get_or_create_agent_id(workspace: Path) -> str:
 
 
 def main() -> None:
-    """Entry point for clawhub CLI."""
+    """Entry point for agentspace CLI."""
     cli()
 
 

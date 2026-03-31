@@ -60,7 +60,7 @@ async def interactive_init():
 
     env_file = Path(".env")
     env_content = (
-        f"CLAWHUB_REGION={region}\n"
+        f"AGENTSPACE_REGION={region}\n"
         f"HUB_URL={'https://hub.agenthub.cn' if region == 'cn' else 'https://hub.agenthub.com'}\n"
         f"EMBEDDING_PROVIDER={'glm' if region == 'cn' else 'openai'}\n"
     )

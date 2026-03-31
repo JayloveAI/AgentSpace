@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 全局通用 关键词/Tag 清洗工具
-适用：中英文、日志、系统、SDK、OpenClaw、ClawHub 全场景
+适用：中英文、日志、系统、SDK、OpenClaw、AgentSpace 全场景
 功能：过滤垃圾词、错误码、无意义碎片，保留专业关键词
 
 使用方法：
@@ -17,7 +17,7 @@
 # ======================
 GLOBAL_WHITELIST = {
     # 核心系统
-    "agentai", "openclaw", "clawhub", "hub", "bridge",
+    "agentai", "openclaw", "agentspace", "hub", "bridge",
     "sdk", "api", "llm", "ui", "web", "server", "client",
     "plugin", "plugins", "tool", "tools", "service",
 
@@ -185,7 +185,7 @@ if __name__ == "__main__":
     # 测试用例
     test_cases = [
         ['agentai', 'openclaw', '的行业临界点', '整全文内容', '这篇报告的完'],
-        ['401', 'error', 'clawhub', 'sdk', 'api'],
+        ['401', 'error', 'agentspace', 'sdk', 'api'],
         ['需要', '获取', '用户', '数据', 'file'],
         ['GPT-4', 'Claude3', 'AgentAI', 'OpenClaw'],
     ]

@@ -1,10 +1,10 @@
 """
-ClawHub OpenClaw Integration Helper
+AgentSpace OpenClaw Integration Helper
 ====================================
 简化的 OpenClaw 集成模块
 
 使用方法:
-    from clawhub_openclaw import auto_catch, ResourceMissing
+    from openclaw_integration import auto_catch, ResourceMissing
 
     @auto_catch
     def my_function(agent, query):
@@ -38,7 +38,7 @@ def check_local_resource(topic: str, resource_type: Optional[str] = None) -> boo
     Returns:
         True 如果本地有匹配的资源
     """
-    supply_dir = Path.home() / ".clawhub" / "supply_provided"
+    supply_dir = Path.home() / ".agentspace" / "supply_provided"
 
     if not supply_dir.exists():
         return False
@@ -61,7 +61,7 @@ def get_received_files(demand_id: Optional[str] = None) -> List[Path]:
     Returns:
         文件路径列表
     """
-    inbox = Path.home() / ".clawhub" / "demand_inbox"
+    inbox = Path.home() / ".agentspace" / "demand_inbox"
 
     if not inbox.exists():
         return []
@@ -95,7 +95,7 @@ def wait_for_delivery(demand_id: str, timeout: float = 300.0) -> Optional[Path]:
     """
     import time
 
-    inbox = Path.home() / ".clawhub" / "demand_inbox"
+    inbox = Path.home() / ".agentspace" / "demand_inbox"
     meta_file = inbox / f"task_{demand_id}_meta.json"
 
     start_time = time.time()

@@ -1,4 +1,4 @@
-﻿# ClawHub Node Auto-Start Script
+﻿# AgentSpace Node Auto-Start Script
 # -*- coding: utf-8 -*-
 # Automatically handles: FRP config, port conflicts, service startup
 
@@ -10,17 +10,17 @@ $ErrorActionPreference = "Continue"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 Write-Host "============================================" -ForegroundColor Cyan
-Write-Host "  ClawHub Node - Auto Start" -ForegroundColor Cyan
+Write-Host "  AgentSpace Node - Auto Start" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 
-$clawhubDir = Join-Path $env:USERPROFILE ".clawhub"
-$frpDir = Join-Path $clawhubDir "frp"
+$agentspaceDir = Join-Path $env:USERPROFILE ".agentspace"
+$frpDir = Join-Path $agentspaceDir "frp"
 
 # [1/5] Load configuration
 Write-Host "[1/5] Loading configuration..." -ForegroundColor Yellow
 
 # Load .env
-$envFile = Join-Path $clawhubDir ".env"
+$envFile = Join-Path $agentspaceDir ".env"
 if (Test-Path $envFile) {
     Get-Content $envFile | ForEach-Object {
         if ($_ -match "^([^#][^=]+)=(.*)$") {
@@ -36,7 +36,7 @@ if (Test-Path $envFile) {
 }
 
 # Load Agent ID
-$agentIdFile = Join-Path $clawhubDir ".agent_id"
+$agentIdFile = Join-Path $agentspaceDir ".agent_id"
 if (Test-Path $agentIdFile) {
     $agentId = Get-Content $agentIdFile -Raw
     $agentId = $agentId.Trim()
@@ -125,21 +125,21 @@ Write-Host "  FRP client started" -ForegroundColor Green
 
 Start-Sleep -Seconds 2
 
-# [5/5] Start ClawHub
-Write-Host "[5/5] Starting ClawHub..." -ForegroundColor Yellow
+# [5/5] Start AgentSpace
+Write-Host "[5/5] Starting AgentSpace..." -ForegroundColor Yellow
 
 try {
-    $clawhubProcess = Start-Process -FilePath "clawhub" -ArgumentList "start" -PassThru
-    Write-Host "  ClawHub started (PID: $($clawhubProcess.Id))" -ForegroundColor Green
+    $agentspaceProcess = Start-Process -FilePath "agentspace" -ArgumentList "start" -PassThru
+    Write-Host "  AgentSpace started (PID: $($agentspaceProcess.Id))" -ForegroundColor Green
 } catch {
-    Write-Host "  Failed to start clawhub: $_" -ForegroundColor Yellow
+    Write-Host "  Failed to start agentspace: $_" -ForegroundColor Yellow
     Write-Host "  Trying python -m client_sdk..." -ForegroundColor Cyan
     python -m client_sdk start
 }
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan
-Write-Host "  ClawHub Node Started" -ForegroundColor Green
+Write-Host "  AgentSpace Node Started" -ForegroundColor Green
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host "  Agent ID:     $agentId" -ForegroundColor White
 Write-Host "  Webhook URL:  http://$serverAddr`:$remotePort" -ForegroundColor White

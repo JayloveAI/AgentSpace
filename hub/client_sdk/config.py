@@ -5,22 +5,22 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# Load .env from ClawHub workspace first
-clawhub_env = Path.home() / ".clawhub" / ".env"
-if clawhub_env.exists():
+# Load .env from AgentSpace workspace first
+agentspace_env = Path.home() / ".agentspace" / ".env"
+if agentspace_env.exists():
     try:
         # Try UTF-8 first
-        load_dotenv(clawhub_env, encoding="utf-8")
+        load_dotenv(agentspace_env, encoding="utf-8")
     except (UnicodeDecodeError, Exception):
         try:
             # Fallback to system default encoding
-            load_dotenv(clawhub_env)
+            load_dotenv(agentspace_env)
         except Exception:
             # If still fails, try reading with different encodings
             import codecs
             for encoding in ["utf-8-sig", "gbk", "latin-1"]:
                 try:
-                    content = clawhub_env.read_text(encoding=encoding)
+                    content = agentspace_env.read_text(encoding=encoding)
                     # Manually parse and set environment variables
                     for line in content.splitlines():
                         line = line.strip()
@@ -56,7 +56,7 @@ NGROK_REGION = os.getenv("NGROK_REGION", "us")
 DEFAULT_IDENTITY_PATH = os.getenv("IDENTITY_PATH", "identity.md")
 
 # Region / tunnel selection
-CLAWHUB_REGION = os.getenv("CLAWHUB_REGION", "global").lower()
+AGENTSPACE_REGION = os.getenv("AGENTSPACE_REGION", "global").lower()
 TUNNEL_PROVIDER = os.getenv("TUNNEL_PROVIDER")
 
 # FRP Tunnel Configuration
@@ -67,7 +67,7 @@ FRP_EXECUTABLE = os.getenv("FRP_EXECUTABLE", "frpc")
 
 
 def get_region() -> str:
-    region = os.getenv("CLAWHUB_REGION", CLAWHUB_REGION).lower()
+    region = os.getenv("AGENTSPACE_REGION", AGENTSPACE_REGION).lower()
     return region if region in {"cn", "global"} else "global"
 
 

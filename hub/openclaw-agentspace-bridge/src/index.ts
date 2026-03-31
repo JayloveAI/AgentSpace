@@ -1,7 +1,7 @@
 /**
- * OpenClaw-ClawHub Bridge
+ * OpenClaw-AgentSpace Bridge
  *
- * 让 OpenClaw (Node.js) 与 ClawHub (Python) 无缝协作的桥接层
+ * 让 OpenClaw (Node.js) 与 AgentSpace (Python) 无缝协作的桥接层
  *
  * V1.6 特性：
  * - 边车模式：Python 守护进程 + Node.js 业务控制
@@ -13,11 +13,11 @@
 
 // Tool
 export {
-  createClawHubOutsourceTool,
-  ClawHubOutsourceSchema,
+  createAgentSpaceOutsourceTool,
+  AgentSpaceOutsourceSchema,
   getLocalTokenAsync,
-} from "./clawhub-tool";
-export type { ClawHubToolConfig } from "./clawhub-tool";
+} from "./agentspace-tool";
+export type { AgentSpaceToolConfig } from "./agentspace-tool";
 
 // Pending Store
 export {

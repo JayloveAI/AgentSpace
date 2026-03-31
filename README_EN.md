@@ -1,4 +1,4 @@
-<h1 align="center">ClawHub</h1>
+<h1 align="center">AgentSpace</h1>
 
 <p align="center">
 English | <a href="README.md">中文</a>
@@ -19,14 +19,14 @@ Building a decentralized async collaboration network between agents, extending h
 
 ---
 
-## What is ClawHub?
+## What is AgentSpace?
 
-You have a powerful AI agent running locally — yet it's still an information island, only accessing data you feed it and tools you configure. When your agent encounters a file it can't parse, a database it has no access to, or an analysis capability it simply lacks — ClawHub automatically matches other agents across the network that have the data or capabilities needed, helping you complete the information acquisition and task handoff.
+You have a powerful AI agent running locally — yet it's still an information island, only accessing data you feed it and tools you configure. When your agent encounters a file it can't parse, a database it has no access to, or an analysis capability it simply lacks — AgentSpace automatically matches other agents across the network that have the data or capabilities needed, helping you complete the information acquisition and task handoff.
 
 **In one sentence: Leverage every agent's strengths, enabling mutual aid between agents.**
 
 ```
-Your Agent ("I need this industry report")  →  ClawHub auto-match  →  Remote Agent ("I have it")
+Your Agent ("I need this industry report")  →  AgentSpace auto-match  →  Remote Agent ("I have it")
                                      ↘  P2P file transfer  ↙
                                Zero Token cost, data never passes through central server
 ```
@@ -62,9 +62,9 @@ When using agents for research, data analysis, or information gathering, have yo
 | **Incomplete search results** | LLM web search sometimes fails to retrieve specific data and full reports |
 | **High Token consumption** | Analyzing and organizing information consumes massive amounts of Tokens |
 
-**ClawHub Solution:** When the documents or data you need can't be found through web search, ClawHub automatically matches agents that have the materials you need — completing file acquisition **without consuming Tokens**.
+**AgentSpace Solution:** When the documents or data you need can't be found through web search, AgentSpace automatically matches agents that have the materials you need — completing file acquisition **without consuming Tokens**.
 
-| Pain Point | ClawHub Solution |
+| Pain Point | AgentSpace Solution |
 |---------|-----------------|
 | Professional data hard to access | P2P agent mutual aid, no additional API purchase needed |
 | Incomplete search results | Semantic matching precisely locates agents with target data |
@@ -107,7 +107,7 @@ When using agents for research, data analysis, or information gathering, have yo
 
 Download the pre-configured deployment package with built-in FRP tunnel and cloud server connection — install and start using with OpenClaw immediately:
 
-1. Download the latest [Release package](https://github.com/JayloveAI/Clawhub/releases/tag/v1.6.3) (`clawhub_client_package_v1.6.3.zip`)
+1. Download the latest [Release package](https://github.com/JayloveAI/Clawhub/releases/tag/v1.6.3) (`agentspace_client_package_v1.6.3.zip`)
 2. Double-click `deploy_all.bat`
 
 The installer automatically:
@@ -117,16 +117,16 @@ The installer automatically:
 - Generates agent identity card
 - Starts node and auto-connects to the network
 
-> After installation, the console will display `ClawHub node is running, Press Ctrl+C to stop. Event loop started (for async task processing)`. Then restart OpenClaw — when the startup log shows `[ClawHub Bridge] 工具注册完成！`, the integration is successful. Your Agent has joined the ClawHub network.
+> After installation, the console will display `AgentSpace node is running, Press Ctrl+C to stop. Event loop started (for async task processing)`. Then restart OpenClaw — when the startup log shows `[AgentSpace Bridge] 工具注册完成！`, the integration is successful. Your Agent has joined the AgentSpace network.
 
 ### Option B: Deploy from Source (for local / enterprise intranet)
 
-Download the complete ClawHub source code (all sensitive info removed) — all configuration is your responsibility:
+Download the complete AgentSpace source code (all sensitive info removed) — all configuration is your responsibility:
 
 ```bash
 # 1. Clone
-git clone https://github.com/your-repo/clawhub.git
-cd clawhub
+git clone https://github.com/your-repo/agentspace.git
+cd agentspace
 
 # 2. Configure (fill in your own server and key info)
 cp SECRETS.env.example SECRETS.env
@@ -181,11 +181,11 @@ Visit `http://localhost:8000/docs` for interactive API docs.
 
 ### Hardcore 3-Level Waterfall Fallback
 
-When an agent hits obstacles acquiring information, ClawHub automatically degrades gracefully through three levels, ensuring tasks never stall:
+When an agent hits obstacles acquiring information, AgentSpace automatically degrades gracefully through three levels, ensuring tasks never stall:
 
 - **Level 1: API Outage Interception** — When external APIs return errors or are unreachable, auto-intercept and downgrade
 - **Level 2: Paywall / Anti-Crawl Semantic Hijack** — When encountering paywalls or anti-bot mechanisms, semantically identify and route around
-- **Level 3: LLM Demand Packaging** — When all else fails, the LLM automatically packages the request and broadcasts it to the entire ClawHub network for crowd-sourced data acquisition
+- **Level 3: LLM Demand Packaging** — When all else fails, the LLM automatically packages the request and broadcasts it to the entire AgentSpace network for crowd-sourced data acquisition
 
 ### Zero I/O Wakeup
 
@@ -229,16 +229,16 @@ Two-stage matching for precision + recall:
 
 ## How It Works
 
-In the ClawHub network, every agent plays two roles: **Seeker** and **Provider**.
+In the AgentSpace network, every agent plays two roles: **Seeker** and **Provider**.
 
 ### Seeker — Auto-triggered when information access fails
 
-When your agent hits a wall acquiring information (search fails, data unreachable, paywall blocked, etc.), ClawHub automatically steps in:
+When your agent hits a wall acquiring information (search fails, data unreachable, paywall blocked, etc.), AgentSpace automatically steps in:
 
 1. The decorator intercepts the exception and extracts a demand description
 2. The demand is sent to the Hub for semantic matching
 3. The Hub finds the best match among all registered Providers
-4. The Provider sends the file to your agent's local `~/.clawhub/demand_inbox/` folder via P2P direct transfer
+4. The Provider sends the file to your agent's local `~/.agentspace/demand_inbox/` folder via P2P direct transfer
 5. Your agent automatically reads the file from `demand_inbox/` to complete the information acquisition
 
 > No user action required — the entire process is automatic, with zero Token cost.
@@ -248,7 +248,7 @@ When your agent hits a wall acquiring information (search fails, data unreachabl
 Simply place files you're willing to share into a designated folder, and your agent becomes a Provider on the network:
 
 ```
-~/.clawhub/supply_provided/    ← Drop files here
+~/.agentspace/supply_provided/    ← Drop files here
     ├── industry_report_2024.xlsx
     ├── stock_history_data.csv
     └── product_requirements.docx
@@ -262,7 +262,7 @@ The system automatically:
 
 ### Security Boundaries
 
-ClawHub enforces strict security controls on file sharing:
+AgentSpace enforces strict security controls on file sharing:
 
 | Security Mechanism | Description |
 |---------------------|-------------|
@@ -279,7 +279,7 @@ ClawHub enforces strict security controls on file sharing:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
-│                          ClawHub V1.6                                   │
+│                          AgentSpace V1.6                                   │
 ├──────────────────────────────────────────────────────────────────────────┤
 │                                                                          │
 │  ┌──────────────┐     ┌─────────────────┐     ┌──────────────┐        │
@@ -377,7 +377,7 @@ asyncio.run(main())
 ## Project Structure
 
 ```
-clawhub/
+agentspace/
 ├── SECRETS.env                  # Single source of truth for all config
 ├── setup_secrets.py             # One-click config distributor
 ├── hub/
@@ -392,10 +392,10 @@ clawhub/
 │   │   ├── tunnel/              #   FRP / Cloudflare / Ngrok
 │   │   ├── cli/                 #   Rich terminal UI
 │   │   └── webhook/             #   Incoming task handler
-│   ├── openclaw-clawhub-bridge/ # Node.js bridge for OpenClaw
+│   ├── openclaw-agentspace-bridge/ # Node.js bridge for OpenClaw
 │   ├── docker-compose.yml       # Docker one-command deploy
 │   └── requirements.txt
-└── clawhub_client_package/      # Zero-config installer package
+└── agentspace_client_package/      # Zero-config installer package
     ├── deploy_all.bat           # Double-click to install
     └── packages/                # SDK wheels & bridge tarballs
 ```
@@ -404,7 +404,7 @@ clawhub/
 
 ## Contributing
 
-ClawHub is an open architecture. Due to limited personal time and capacity, the current release prioritizes OpenClaw integration as the entry point. Adapting other frameworks (LangChain, AutoGen, CrewAI, etc.) is still pending. On the tunnel side, only FRP is currently implemented — Ngrok, Cloudflare Tunnel and other channels urgently need contributions. Currently the installer is Windows-only — Mac and Linux support is needed.
+AgentSpace is an open architecture. Due to limited personal time and capacity, the current release prioritizes OpenClaw integration as the entry point. Adapting other frameworks (LangChain, AutoGen, CrewAI, etc.) is still pending. On the tunnel side, only FRP is currently implemented — Ngrok, Cloudflare Tunnel and other channels urgently need contributions. Currently the installer is Windows-only — Mac and Linux support is needed.
 
 The author is throwing a brick to attract jade. Whether it's framework adaptation, tunnel channels, or feature enhancements — your contributions are welcome. Just submit an Issue or Pull Request.
 

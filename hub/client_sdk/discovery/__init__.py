@@ -1,4 +1,4 @@
-﻿"""Discovery utilities for clawhub configuration."""
+﻿"""Discovery utilities for agentspace configuration."""
 
 from .config_scraper import generate_config
 from .skill_scanner import scan_skills

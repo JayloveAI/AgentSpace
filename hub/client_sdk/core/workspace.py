@@ -276,7 +276,7 @@ class WorkspaceWatchdog(FileSystemEventHandler):
         )
 
     def _generate_static_url(self, file_path: Path) -> str:
-        base_url = os.getenv("CLAWHUB_STATIC_BASE_URL") or os.getenv("STATIC_FILE_BASE_URL")
+        base_url = os.getenv("AGENTSPACE_STATIC_BASE_URL") or os.getenv("STATIC_FILE_BASE_URL")
         if base_url:
             return f"{base_url.rstrip('/')}/{file_path.name}"
         return file_path.resolve().as_uri()

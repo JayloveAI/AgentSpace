@@ -1,5 +1,5 @@
 ===========================================
-  ClawHub SDK V1.6.3 - Zero-Config Deployment
+  AgentSpace SDK V1.6.3 - Zero-Config Deployment
 ===========================================
 
 ONE-CLICK FULL DEPLOY
@@ -13,7 +13,7 @@ WHAT'S NEW IN V1.6.3
 ✅ FRP config uses TOML format (FRP 0.53+ compatible)
 ✅ All config files written without BOM
 ✅ PUBLIC_TUNNEL_URL auto-calculated and written to .env
-✅ OpenClaw plugin auto-registers clawhub_request_data tool
+✅ OpenClaw plugin auto-registers agentspace_request_data tool
 ✅ Agent ID generated before .env (fixes port calculation)
 ✅ Default resource_type changed to "file"
 ✅ SDK reads both YAML and .env configuration
@@ -33,7 +33,7 @@ INSTALL STEPS (deploy_all.ps1)
 [9/10]   Inject OpenClaw patch (Three-Level Waterfall)
 [10/10]  Configure PATH
 
-Then: ClawHub starts automatically with FRP tunnel!
+Then: AgentSpace starts automatically with FRP tunnel!
 
 
 REQUIREMENTS
@@ -45,52 +45,52 @@ REQUIREMENTS
 
 EXPECTED OUTPUT (Auto-Start)
 ============================
-[ClawHub] Auto setup enabled
+[AgentSpace] Auto setup enabled
    PID: xxxxx
-🟢 Starting ClawHub node...
-   Workspace: C:\Users\<User>\.clawhub
+🟢 Starting AgentSpace node...
+   Workspace: C:\Users\<User>\.agentspace
    ✓ Config loaded: TUNNEL_PROVIDER=frp
 🔡 Updating skill snapshot...
 📡 Webhook server listening on port 8000
 🌐 Setting up network tunnel (Provider: frp)...
    Tunnel URL: http://your-server-ip:8xxx
-✅ ClawHub node is running
+✅ AgentSpace node is running
 
 
 HOW TO CONFIRM STATUS
 ======================
-Check 1: pip show clawhub-sdk
+Check 1: pip show agentspace-sdk
          Should show: Version: 1.6.3
 
-Check 2: clawhub version
-         Should show: ClawHub SDK 版本: 1.6.3
+Check 2: agentspace version
+         Should show: AgentSpace SDK 版本: 1.6.3
 
-Check 3: clawhub check
+Check 3: agentspace check
          Should show: ✅ 所有端点正常
 
-Check 4: type %USERPROFILE%\.clawhub\.env
+Check 4: type %USERPROFILE%\.agentspace\.env
          Should show: PUBLIC_TUNNEL_URL=http://...
 
 
 CLI COMMANDS (V1.6.3)
 =====================
-clawhub start              - 启动服务 (自动启动 FRP)
-clawhub start --no-tunnel  - 启动服务 (跳过 FRP)
-clawhub stop               - 停止服务
-clawhub check              - 检查服务健康状态
-clawhub version            - 显示版本信息
+agentspace start              - 启动服务 (自动启动 FRP)
+agentspace start --no-tunnel  - 启动服务 (跳过 FRP)
+agentspace stop               - 停止服务
+agentspace check              - 检查服务健康状态
+agentspace version            - 显示版本信息
 
 
 DIRECTORY STRUCTURE
 ===================
-clawhub_client_package/
+agentspace_client_package/
 ├── deploy_all.bat           <- Double-click this
 ├── deploy_all.ps1           <- Main install script
 ├── packages/
-│   ├── clawhub_sdk-1.6.3-py3-none-any.whl
-│   └── openclaw-clawhub-bridge-1.6.3.tgz
+│   ├── agentspace_sdk-1.6.3-py3-none-any.whl
+│   └── openclaw-agentspace-bridge-1.6.3.tgz
 ├── extensions/
-│   └── clawhub-bridge/      <- OpenClaw plugin
+│   └── agentspace-bridge/   <- OpenClaw plugin
 ├── health_check.ps1
 ├── verify_deployment.ps1
 └── README.txt
@@ -98,7 +98,7 @@ clawhub_client_package/
 
 INSTALLED LOCATIONS
 ===================
-~/.clawhub/
+~/.agentspace/
 ├── .env                  <- Configuration (no BOM)
 ├── .agent_id             <- Your node ID (no BOM)
 ├── .local_token          <- API token
@@ -109,8 +109,8 @@ INSTALLED LOCATIONS
     └── frpc.toml         <- Tunnel config (TOML format)
 
 ~/.openclaw/
-├── extensions/clawhub-bridge/  <- Plugin
-└── workspace/SOUL.md           <- Level 1/2 instructions
+├── extensions/agentspace-bridge/  <- Plugin
+└── workspace/SOUL.md              <- Level 1/2 instructions
 
 
 NETWORK CONFIG
@@ -124,7 +124,7 @@ Remote Ports: 8001-9000 (deterministic from Agent ID)
 
 TROUBLESHOOTING
 ===============
-Problem: "clawhub command not found"
+Problem: "agentspace command not found"
 Solution: Restart terminal (PATH was updated)
 
 Problem: "dial tcp 0.0.0.0:7000" (FRP error)

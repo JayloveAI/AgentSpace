@@ -13,7 +13,7 @@ const getFetch = async () => {
 };
 
 // 📬 通知目录路径
-const NOTIFICATION_DIR = path.join(os.homedir(), '.clawhub', 'notifications');
+const NOTIFICATION_DIR = path.join(os.homedir(), '.agentspace', 'notifications');
 
 // 📬 待处理通知队列（内存存储）
 const pendingNotifications = [];
@@ -22,7 +22,7 @@ const pendingNotifications = [];
 async function getLocalTokenAsync() {
   const tokenPath = path.join(
     os.homedir(),
-    ".clawhub",
+    ".agentspace",
     ".local_token"
   );
   try {
@@ -46,7 +46,7 @@ function showDeliveryNotification(notice, api) {
 
   if (notice.type === 'demand_expired') {
     const msg = `
-🔔 === ClawHub 通知 === 🔔
+🔔 === AgentSpace 通知 === 🔔
 ⚠️ 【需求过期】
 📋 原任务: ${notice.original_task || '未知'}
 💬 ${notice.message || '需求已过期，未找到数据。'}
@@ -62,7 +62,7 @@ function showDeliveryNotification(notice, api) {
   }
 
   const msg = `
-🔔 === ClawHub 情报送达 === 🔔
+🔔 === AgentSpace 情报送达 === 🔔
 🎉 【数据送达】${notice.filename || path.basename(notice.file_path || '')}
 📂 位置: ${notice.file_path}
 📋 原任务: ${notice.original_task || '未知'}
@@ -88,14 +88,14 @@ function startNotificationWatcher(api) {
   if (!fs.existsSync(NOTIFICATION_DIR)) {
     try {
       fs.mkdirSync(NOTIFICATION_DIR, { recursive: true });
-      api.logger.info(`[ClawHub] 📁 创建通知目录: ${NOTIFICATION_DIR}`);
+      api.logger.info(`[AgentSpace] 📁 创建通知目录: ${NOTIFICATION_DIR}`);
     } catch (e) {
-      api.logger.error(`[ClawHub] 无法创建通知目录: ${e.message}`);
+      api.logger.error(`[AgentSpace] 无法创建通知目录: ${e.message}`);
       return;
     }
   }
 
-  api.logger.info(`[ClawHub] 👀 开始监听通知目录: ${NOTIFICATION_DIR}`);
+  api.logger.info(`[AgentSpace] 👀 开始监听通知目录: ${NOTIFICATION_DIR}`);
 
   // 使用 fs.watch 监听文件夹变化
   const watcher = fs.watch(NOTIFICATION_DIR, (eventType, filename) => {
@@ -116,20 +116,20 @@ function startNotificationWatcher(api) {
           const content = fs.readFileSync(filePath, 'utf8');
           const notice = JSON.parse(content);
 
-          api.logger.info(`[ClawHub] 📬 收到通知: ${notice.type || 'unknown'}`);
+          api.logger.info(`[AgentSpace] 📬 收到通知: ${notice.type || 'unknown'}`);
 
           // 🔥 弹出文件送达通知（实时）
           showDeliveryNotification(notice, api);
 
         } catch (e) {
-          api.logger.error(`[ClawHub] 解析通知失败: ${e.message}`);
+          api.logger.error(`[AgentSpace] 解析通知失败: ${e.message}`);
         }
       }, 300);
     }
   });
 
   watcher.on('error', (e) => {
-    api.logger.error(`[ClawHub] 监听器错误: ${e.message}`);
+    api.logger.error(`[AgentSpace] 监听器错误: ${e.message}`);
   });
 
   return watcher;
@@ -139,7 +139,7 @@ function startNotificationWatcher(api) {
 function formatNotifications(notifications) {
   if (notifications.length === 0) return '';
 
-  const lines = ['\n🔔 === ClawHub 情报送达 === 🔔\n'];
+  const lines = ['\n🔔 === AgentSpace 情报送达 === 🔔\n'];
 
   for (const n of notifications) {
     if (n.type === 'expired') {
@@ -158,15 +158,15 @@ function formatNotifications(notifications) {
 
 // 核心修复：导出函数格式（符合 OpenClaw 标准）
 module.exports = (api) => {
-  api.logger.info("[ClawHub Bridge] 正在初始化...");
+  api.logger.info("[AgentSpace Bridge] 正在初始化...");
 
   // 🔧 启动通知目录监听（核心功能）
   startNotificationWatcher(api);
 
   // 🔧 注册数据请求工具
   api.registerTool({
-    name: "clawhub_request_data",
-    label: "ClawHub 数据请求",
+    name: "agentspace_request_data",
+    label: "AgentSpace 数据请求",
     description: "【终极数据获取与兜底工具】当你遇到 401/403 错误、付费墙，或本地缺少核心数据时，必须调用此工具向全网发起异步外包求助。",
     parameters: {
       type: "object",
@@ -197,7 +197,7 @@ module.exports = (api) => {
 
       if (!token) {
         return {
-          content: [{ type: "text", text: notificationMsg + "ClawHub 未启动或 Token 文件不存在。" }]
+          content: [{ type: "text", text: notificationMsg + "AgentSpace 未启动或 Token 文件不存在。" }]
         };
       }
 
@@ -235,7 +235,7 @@ module.exports = (api) => {
             type: "text",
             text: (
               notificationMsg +
-              `数据需求已成功提交至 ClawHub 异步外包网络 (需求 ID: ${result.demand_id})。\n` +
+              `数据需求已成功提交至 AgentSpace 异步外包网络 (需求 ID: ${result.demand_id})。\n` +
               `系统底层正在全力进行全网匹配与资料获取。\n\n` +
               `【状态与建议】：\n` +
               `1. 状态: 资料获取完全异步,送达后将通过独立通道通知。\n` +
@@ -245,9 +245,9 @@ module.exports = (api) => {
           }]
         };
       } catch (error) {
-        api.logger.error(`[ClawHub Bridge] 工具执行失败: ${error.message}`);
+        api.logger.error(`[AgentSpace Bridge] 工具执行失败: ${error.message}`);
         return {
-          content: [{ type: "text", text: notificationMsg + `ClawHub 服务连接失败: ${error.message}` }]
+          content: [{ type: "text", text: notificationMsg + `AgentSpace 服务连接失败: ${error.message}` }]
         };
       }
     }
@@ -255,8 +255,8 @@ module.exports = (api) => {
 
   // 📬 注册通知检查工具
   api.registerTool({
-    name: "clawhub_check_delivery",
-    label: "ClawHub 检查投递",
+    name: "agentspace_check_delivery",
+    label: "AgentSpace 检查投递",
     description: "【投递状态检查】检查是否有新的数据投递通知。当用户询问数据是否到达时调用此工具。",
     parameters: {
       type: "object",
@@ -286,5 +286,5 @@ module.exports = (api) => {
     }
   });
 
-  api.logger.info("[ClawHub Bridge] 初始化完成! (clawhub_request_data, clawhub_check_delivery)");
+  api.logger.info("[AgentSpace Bridge] 初始化完成! (agentspace_request_data, agentspace_check_delivery)");
 };

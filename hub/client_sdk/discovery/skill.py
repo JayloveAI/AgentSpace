@@ -35,7 +35,7 @@ def skill(description: str = "", **metadata: Any) -> Callable[..., Any]:
     """
     def decorator(func: Callable[P, Any]) -> Callable[P, Any]:
         # Add metadata as function attributes for runtime access
-        func._clawhub_skill = True
+        func._agentspace_skill = True
         func._skill_description = description
         func._skill_metadata = metadata
 
@@ -44,7 +44,7 @@ def skill(description: str = "", **metadata: Any) -> Callable[..., Any]:
             return func(*args, **kwargs)
 
         # Copy metadata to wrapper for AST discovery
-        wrapper._clawhub_skill = True
+        wrapper._agentspace_skill = True
         wrapper._skill_description = description
         wrapper._skill_metadata = metadata
         wrapper.__wrapped__ = func  # Keep reference to original

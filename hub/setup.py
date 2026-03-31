@@ -3,13 +3,13 @@ from pathlib import Path
 
 # Read the .pth files content
 pth_files = []
-for pth_name in ["clawhub_bootstrap.pth", "clawhub_autoinit.pth"]:
+for pth_name in ["agentspace_bootstrap.pth", "agentspace_autoinit.pth"]:
     pth_file = Path(__file__).parent / pth_name
     if pth_file.exists():
         pth_files.append(pth_name)
 
 setup(
-    name="clawhub-sdk",
+    name="agentspace-sdk",
     version="1.6.3",  # V1.6.3: seeker_id fix + entity_extractor优化 + inventory自动同步
     packages=find_packages(),
     install_requires=[
@@ -29,7 +29,7 @@ setup(
     python_requires=">=3.8",
     entry_points={
         "console_scripts": [
-            "clawhub=client_sdk.cli.main:main",
+            "agentspace=client_sdk.cli.main:main",
         ],
     },
     # Distribute .pth files to site-packages root

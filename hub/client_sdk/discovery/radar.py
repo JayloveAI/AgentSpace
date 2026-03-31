@@ -27,7 +27,7 @@ class DiscoveryRadar:
     Automatic skill discovery radar for zero-config setup.
 
     The radar scans Python files for @skill decorated functions and
-    generates clawhub_config.yaml snapshots. This enables automatic
+    generates agentspace_config.yaml snapshots. This enables automatic
     skill registration without manual YAML editing.
     """
 
@@ -69,12 +69,12 @@ class DiscoveryRadar:
 
         Args:
             project_root: Root directory to scan for skills. Defaults to cwd.
-            config_path: Path to write clawhub_config.yaml. Defaults to ~/.clawhub/.
+            config_path: Path to write agentspace_config.yaml. Defaults to ~/.agentspace/.
             ignore_dirs: Directories to skip during scanning.
             ignore_patterns: File patterns to skip.
         """
         self.project_root = Path(project_root) if project_root else Path.cwd()
-        self.config_path = Path(config_path) if config_path else (Path.home() / ".clawhub" / "clawhub_config.yaml")
+        self.config_path = Path(config_path) if config_path else (Path.home() / ".agentspace" / "agentspace_config.yaml")
         self.ignore_dirs = ignore_dirs or self.DEFAULT_IGNORE_DIRS
         self.ignore_patterns = ignore_patterns or self.DEFAULT_IGNORE_PATTERNS
 
@@ -216,7 +216,7 @@ class DiscoveryRadar:
             if isinstance(decorator, ast.Call):
                 if isinstance(decorator.func, ast.Name) and decorator.func.id == "skill":
                     return True
-                # Check for clawhub.skill or module.skill
+                # Check for agentspace.skill or module.skill
                 if isinstance(decorator.func, ast.Attribute) and decorator.func.attr == "skill":
                     return True
         return False
@@ -295,7 +295,7 @@ class DiscoveryRadar:
         return params
 
     def _save_config(self, scan_result: dict[str, Any]) -> None:
-        """Save the scan result as clawhub_config.yaml."""
+        """Save the scan result as agentspace_config.yaml."""
         # Ensure config directory exists
         self.config_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -316,7 +316,7 @@ class DiscoveryRadar:
             yaml.dump(config_data, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
 
     def load_config(self) -> dict[str, Any]:
-        """Load the existing clawhub_config.yaml if it exists."""
+        """Load the existing agentspace_config.yaml if it exists."""
         if not self.config_path.exists():
             return {}
 

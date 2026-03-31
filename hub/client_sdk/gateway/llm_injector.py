@@ -1,4 +1,4 @@
-"""Zero-Key LLM dependency injection for ClawHub gateway.
+"""Zero-Key LLM dependency injection for AgentSpace gateway.
 
 This module provides automatic LLM client extraction from the host context,
 with graceful fallback to environment variables. This enables the SDK to
@@ -111,7 +111,7 @@ def get_llm_with_fallback(*args: Any, **kwargs: Any) -> Any:
         return llm
 
     # Strategy 2: Create from environment variables
-    # Try Anthropic first (primary for ClawHub)
+    # Try Anthropic first (primary for AgentSpace)
     anthropic_key = os.getenv("ANTHROPIC_API_KEY")
     if anthropic_key:
         try:

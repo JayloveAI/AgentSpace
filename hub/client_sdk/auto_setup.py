@@ -1,5 +1,5 @@
 """
-ClawHub Auto Setup for OpenClaw
+AgentSpace Auto Setup for OpenClaw
 ================================
 全自动集成模块 - 用户无需任何代码修改
 
@@ -9,7 +9,7 @@ ClawHub Auto Setup for OpenClaw
   3. 文件送达后自动通知 OpenClaw
 
 使用方法（只需一行）：
-    import clawhub_auto_setup  # 放在 OpenClaw 启动文件的第一行
+    import agentspace_auto_setup  # 放在 OpenClaw 启动文件的第一行
 """
 
 from __future__ import annotations
@@ -22,24 +22,24 @@ import functools
 import asyncio
 
 # 环境标记
-_CLAWHUB_AUTO_SETUP = False
+_AGENTSPACE_AUTO_SETUP = False
 
 
 def enable_auto_setup():
     """
     启用全自动集成
 
-    调用此函数后，ClawHub 会自动：
+    调用此函数后，AgentSpace 会自动：
     1. 拦截 FileNotFoundError 和资源相关的异常
     2. 自动发布 demand 到 Hub
     3. 等待资源送达后继续执行
     """
-    global _CLAWHUB_AUTO_SETUP
+    global _AGENTSPACE_AUTO_SETUP
 
-    if _CLAWHUB_AUTO_SETUP:
+    if _AGENTSPACE_AUTO_SETUP:
         return  # 已启用
 
-    _CLAWHUB_AUTO_SETUP = True
+    _AGENTSPACE_AUTO_SETUP = True
 
     # 保存原始异常
     original_file_not_found = FileNotFoundError
@@ -60,7 +60,7 @@ def enable_auto_setup():
     # 设置异常钩子
     sys.excepthook = _auto_exception_hook
 
-    print("[ClawHub] Auto setup enabled - resource requests will be automatically captured")
+    print("[AgentSpace] Auto setup enabled - resource requests will be automatically captured")
 
 
 def _auto_exception_hook(exc_type, exc_value, exc_traceback):
@@ -87,8 +87,8 @@ def _auto_exception_hook(exc_type, exc_value, exc_traceback):
         gateway = UniversalResourceGateway()
         loop.create_task(gateway.publish_bounty_in_background(error, str(exc_value)))
 
-        print(f"[ClawHub] Auto-captured resource error: {exc_value}")
-        print("[ClawHub] Publishing demand to Hub...")
+        print(f"[AgentSpace] Auto-captured resource error: {exc_value}")
+        print("[AgentSpace] Publishing demand to Hub...")
 
         # 不阻止程序继续运行
         return
@@ -141,7 +141,7 @@ def auto_catch_decorator(func: Callable) -> Callable:
     自动捕获装饰器 - 可用于装饰 OpenClaw 的关键函数
 
     用法：
-        from clawhub_auto_setup import auto_catch_decorator
+        from agentspace_auto_setup import auto_catch_decorator
 
         @auto_catch_decorator
         def openclaw_main():
@@ -173,21 +173,21 @@ def patch_openclaw():
                 return auto_catch_and_route(original_run)(self, *args, **kwargs)
 
             openclaw.Agent.run = patched_run
-            print("[ClawHub] OpenClaw Agent.run patched successfully")
+            print("[AgentSpace] OpenClaw Agent.run patched successfully")
 
     except ImportError:
-        print("[ClawHub] OpenClaw not found - skipping patch")
+        print("[AgentSpace] OpenClaw not found - skipping patch")
 
 
 # 自动启用（当模块被导入时）
 def _auto_init():
     """模块导入时自动初始化"""
     # 检查环境变量
-    if os.getenv('CLAWHUB_AUTO_SETUP', '').lower() in ('1', 'true', 'yes'):
+    if os.getenv('AGENTSPACE_AUTO_SETUP', '').lower() in ('1', 'true', 'yes'):
         enable_auto_setup()
 
     # 检查配置文件
-    config_file = Path.home() / ".clawhub" / "auto_setup.conf"
+    config_file = Path.home() / ".agentspace" / "auto_setup.conf"
     if config_file.exists():
         enable_auto_setup()
 

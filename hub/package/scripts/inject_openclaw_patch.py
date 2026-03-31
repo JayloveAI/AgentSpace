@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-ClawHub OpenClaw Patch Injector
+AgentSpace OpenClaw Patch Injector
 ================================
 Injects Three-Level Waterfall fallback strategy into OpenClaw's core files.
 
-This script modifies OpenClaw's core files to add clawhub_request_data
+This script modifies OpenClaw's core files to add agentspace_request_data
 as a fallback when web_search or browser tools encounter errors.
 
 V1.6.3 - Three-Level Waterfall Strategy
@@ -107,13 +107,13 @@ def inject_waterfall_patch(content):
     Inject Three-Level Waterfall patch into OpenClaw content
     Compatible with both old and new OpenClaw versions.
 
-    The patch adds clawhub_request_data as a fallback when:
+    The patch adds agentspace_request_data as a fallback when:
     1. web_search returns 401/403/402/429
     2. browser encounters paywall/login wall
     """
 
     # Check if already patched
-    if 'clawhub_request_data' in content and 'fallback' in content:
+    if 'agentspace_request_data' in content and 'fallback' in content:
         log_warning("Already patched, skipping")
         return content, False
 
@@ -125,10 +125,10 @@ def inject_waterfall_patch(content):
         modified = re.sub(
             new_version_pattern,
             '{const status = res.status;\n'
-            '\t\t// --- [ClawHub] Level 1 Waterfall Injection ---\n'
+            '\t\t// --- [AgentSpace] Level 1 Waterfall Injection ---\n'
             '\t\tif (status === 401 || status === 403 || status === 402 || status === 429) {\n'
-            '\t\t\tif (typeof clawhub_request_data === \'function\') {\n'
-            '\t\t\t\tclawhub_request_data({\n'
+            '\t\t\tif (typeof agentspace_request_data === \'function\') {\n'
+            '\t\t\t\tagentspace_request_data({\n'
             '\t\t\t\t\ttype: \'web_search\',\n'
             '\t\t\t\t\tquery: typeof searchQuery !== \'undefined\' ? searchQuery : \'\',\n'
             '\t\t\t\t\terror: status,\n'
@@ -147,10 +147,10 @@ def inject_waterfall_patch(content):
     old_strict_pattern = r'(async function throwWebSearchApiError\(res, providerLabel\) \{\s*const detail = \(await readResponseText\(res, \{ maxBytes: 64e3 \}\)\.text;)'
     old_patch = r'''\1
 \tconst status = res.status;
-\t// --- [ClawHub] Level 1 Waterfall Injection ---
+\t// --- [AgentSpace] Level 1 Waterfall Injection ---
 \tif (status === 401 || status === 403 || status === 402 || status === 429) {
-\t\tif (typeof clawhub_request_data === 'function') {
-\t\t\tclawhub_request_data({
+\t\tif (typeof agentspace_request_data === 'function') {
+\t\t\tagentspace_request_data({
 \t\t\t\ttype: 'web_search',
 \t\t\t\tquery: typeof searchQuery !== 'undefined' ? searchQuery : '',
 \t\t\t\terror: status,
@@ -179,9 +179,9 @@ def inject_waterfall_patch(content):
         modified = re.sub(
             browser_error_pattern,
             r'\1\n'
-            '\t\t// --- [ClawHub] Level 2 Waterfall Injection ---\n'
-            '\t\tif (typeof clawhub_request_data === \'function\') {\n'
-            '\t\t\tclawhub_request_data({\n'
+            '\t\t// --- [AgentSpace] Level 2 Waterfall Injection ---\n'
+            '\t\tif (typeof agentspace_request_data === \'function\') {\n'
+            '\t\t\tagentspace_request_data({\n'
             '\t\t\t\ttype: \'browser\',\n'
             '\t\t\t\tquery: typeof searchQuery !== \'undefined\' ? searchQuery : \'\',\n'
             '\t\t\t\terror: typeof err !== \'undefined\' ? String(err) : \'unknown\',\n'
@@ -200,9 +200,9 @@ def inject_waterfall_patch(content):
         modified = re.sub(
             alt_pattern,
             r'\1\n'
-            '\t// --- [ClawHub] Waterfall Fallback ---\n'
-            '\tif (typeof clawhub_request_data === \'function\') {\n'
-            '\t\tclawhub_request_data({\n'
+            '\t// --- [AgentSpace] Waterfall Fallback ---\n'
+            '\tif (typeof agentspace_request_data === \'function\') {\n'
+            '\t\tagentspace_request_data({\n'
             '\t\t\ttype: \'web_search\',\n'
             '\t\t\tquery: typeof searchQuery !== \'undefined\' ? searchQuery : \'\',\n'
             '\t\t\terror: \'unknown\',\n'
@@ -256,7 +256,7 @@ def patch_file(file_path, dry_run=False):
 
 def main():
     print("=" * 50)
-    print("  ClawHub OpenClaw Patch Injector V1.6.3")
+    print("  AgentSpace OpenClaw Patch Injector V1.6.3")
     print("=" * 50)
     print()
 

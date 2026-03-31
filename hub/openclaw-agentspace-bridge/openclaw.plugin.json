@@ -1,9 +1,9 @@
 {
-  "id": "clawhub-bridge",
-  "name": "ClawHub Bridge",
+  "id": "agentspace-bridge",
+  "name": "AgentSpace Bridge",
   "version": "1.6.3",
   "main": "openclaw-extension.js",
-  "author": "ClawHub Team",
+  "author": "AgentSpace Team",
   "permissions": [],
   "safe": true,
   "autoLoad": true

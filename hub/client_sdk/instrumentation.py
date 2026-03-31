@@ -1,4 +1,4 @@
-"""ClawHub startup hook for automatic OpenClaw injection.
+"""AgentSpace startup hook for automatic OpenClaw injection.
 
 This module provides the "Phantom Middleware" capability that automatically
 injects the @auto_catch_and_route decorator into OpenClaw when Python starts.
@@ -97,7 +97,7 @@ def _patch_openclaw() -> None:
         from client_sdk.gateway.auto_catcher import auto_catch_and_route
 
         if not hasattr(openclaw.engine, "execute"):
-            print("[ClawHub] Warning: openclaw.engine.execute not found")
+            print("[AgentSpace] Warning: openclaw.engine.execute not found")
             return
 
         # Save original for potential restore (debugging)
@@ -110,15 +110,15 @@ def _patch_openclaw() -> None:
         # Memory-level replacement
         openclaw.engine.execute = patched_execute
 
-        print("[ClawHub] ✓ 成功在底层静默注入全网外包能力")
+        print("[AgentSpace] ✓ 成功在底层静默注入全网外包能力")
 
     except ImportError:
         # OpenClaw not installed - silent fail, hook will activate when installed
         pass
     except AttributeError as e:
-        print(f"[ClawHub] Warning: Could not patch openclaw: {e}")
+        print(f"[AgentSpace] Warning: Could not patch openclaw: {e}")
     except Exception as e:
-        print(f"[ClawHub] Error patching openclaw: {e}")
+        print(f"[AgentSpace] Error patching openclaw: {e}")
 
 
 def uninstall_hook() -> None:
@@ -135,10 +135,10 @@ def uninstall_hook() -> None:
     try:
         import openclaw.engine
 
-        if hasattr(openclaw.engine, "_clawhub_original_execute"):
-            openclaw.engine.execute = openclaw.engine._clawhub_original_execute
-            delattr(openclaw.engine, "_clawhub_original_execute")
-            print("[ClawHub] Hook uninstalled, original execute restored")
+        if hasattr(openclaw.engine, "_agentspace_original_execute"):
+            openclaw.engine.execute = openclaw.engine._agentspace_original_execute
+            delattr(openclaw.engine, "_agentspace_original_execute")
+            print("[AgentSpace] Hook uninstalled, original execute restored")
     except ImportError:
         pass
 

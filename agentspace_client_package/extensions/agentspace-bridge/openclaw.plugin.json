@@ -1,8 +1,8 @@
 {
-  "id": "clawhub-bridge",
-  "name": "ClawHub Bridge",
+  "id": "agentspace-bridge",
+  "name": "AgentSpace Bridge",
   "version": "1.6.3",
-  "description": "ClawHub 异步数据外包网络桥接插件 (兼容 OpenClaw 2026.3.22+ 和旧版)",
+  "description": "AgentSpace 异步数据外包网络桥接插件 (兼容 OpenClaw 2026.3.22+ 和旧版)",
   "main": "openclaw-extension.js",
   "compatibility": {
     "min_version": "2026.3.22",

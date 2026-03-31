@@ -1,4 +1,4 @@
-# ClawHub SDK - One-Click Install Script (Zero-Config)
+# AgentSpace SDK - One-Click Install Script (Zero-Config)
 # -*- coding: utf-8 -*-
 
 $ErrorActionPreference = "Continue"
@@ -8,7 +8,7 @@ $ErrorActionPreference = "Continue"
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
 Write-Host "============================================"  -ForegroundColor Cyan
-Write-Host "  ClawHub SDK - Zero-Config Install"  -ForegroundColor Cyan
+Write-Host "  AgentSpace SDK - Zero-Config Install"  -ForegroundColor Cyan
 Write-Host "============================================"  -ForegroundColor Cyan
 Write-Host ""
 
@@ -18,7 +18,7 @@ Set-Location $scriptPath
 
 # [1/10] Uninstall old version (skip if not installed)
 Write-Host "[1/10] Uninstalling old version..." -ForegroundColor Yellow
-$pipResult = pip uninstall clawhub-sdk -y 2>&1
+$pipResult = pip uninstall agentspace-sdk -y 2>&1
 if ($pipResult -like "*not installed*") {
     Write-Host "  Skipped (not installed)" -ForegroundColor Cyan
 } elseif ($LASTEXITCODE -eq 0) {
@@ -40,7 +40,7 @@ if ($corruptedDirs) {
     }
 }
 
-$wheelPath = Join-Path $scriptPath "packages\clawhub_sdk-1.6.3-py3-none-any.whl"
+$wheelPath = Join-Path $scriptPath "packages\agentspace_sdk-1.6.3-py3-none-any.whl"
 if (-not (Test-Path $wheelPath)) {
     Write-Host "  ERROR: Package file not found: $wheelPath" -ForegroundColor Red
     Write-Host "  Please ensure 'packages' folder exists" -ForegroundColor Red
@@ -58,7 +58,7 @@ Write-Host "  SDK installed" -ForegroundColor Green
 # [2.5/10] Fix SDK version inconsistency
 Write-Host "[2.5/10] Fixing SDK version consistency..." -ForegroundColor Yellow
 $clientSdkPath = Join-Path $env:LOCALAPPDATA "Programs\Python\Python314\Lib\site-packages\client_sdk"
-$distInfoPath = Join-Path $env:LOCALAPPDATA "Programs\Python\Python314\Lib\site-packages\clawhub_sdk-1.6.3.dist-info"
+$distInfoPath = Join-Path $env:LOCALAPPDATA "Programs\Python\Python314\Lib\site-packages\agentspace_sdk-1.6.3.dist-info"
 
 if (Test-Path $distInfoPath) {
     $metadataFile = Join-Path $distInfoPath "METADATA"
@@ -108,8 +108,8 @@ if (Test-Path $clientSdkPath) {
             }
         }
 
-        if ($mainContent -match 'ClawHub SDK 版本:\s*[\d.]+') {
-            $mainContent = $mainContent -replace 'ClawHub SDK 版本:\s*[\d.]+', "ClawHub SDK 版本: $version"
+        if ($mainContent -match 'AgentSpace SDK 版本:\s*[\d.]+') {
+            $mainContent = $mainContent -replace 'AgentSpace SDK 版本:\s*[\d.]+', "AgentSpace SDK 版本: $version"
             $changed = $true
         }
 
@@ -126,7 +126,7 @@ if (Test-Path $clientSdkPath) {
 
 # [3/10] Install FRP (auto-download with China mirrors)
 Write-Host "[3/10] Installing FRP..." -ForegroundColor Yellow
-$frpDir = Join-Path $env:USERPROFILE ".clawhub\frp"
+$frpDir = Join-Path $env:USERPROFILE ".agentspace\frp"
 if (-not (Test-Path $frpDir)) {
     New-Item -ItemType Directory -Path $frpDir -Force | Out-Null
 }
@@ -201,12 +201,12 @@ if (Test-Path $frpcExe) {
 
 # [4/10] Generate Agent ID FIRST (needed for .env and FRP config)
 Write-Host "[4/10] Generating Agent ID..." -ForegroundColor Yellow
-$clawhubDir = Join-Path $env:USERPROFILE ".clawhub"
-if (-not (Test-Path $clawhubDir)) {
-    New-Item -ItemType Directory -Path $clawhubDir -Force | Out-Null
+$agentspaceDir = Join-Path $env:USERPROFILE ".agentspace"
+if (-not (Test-Path $agentspaceDir)) {
+    New-Item -ItemType Directory -Path $agentspaceDir -Force | Out-Null
 }
 
-$agentIdFile = Join-Path $clawhubDir ".agent_id"
+$agentIdFile = Join-Path $agentspaceDir ".agent_id"
 if (-not (Test-Path $agentIdFile)) {
     $agentId = "agent-" + [Guid]::NewGuid().ToString().Substring(0, 8)
     # Write without BOM (SDK reads this file)
@@ -219,7 +219,7 @@ if (-not (Test-Path $agentIdFile)) {
 
 # [5/10] Configure .env file
 Write-Host "[5/10] Configuring .env file..." -ForegroundColor Yellow
-$envFile = Join-Path $clawhubDir ".env"
+$envFile = Join-Path $agentspaceDir ".env"
 
 # Calculate PUBLIC_TUNNEL_URL (deterministic from agent ID)
 $sha256Tunnel = [System.Security.Cryptography.SHA256]::Create()
@@ -229,8 +229,8 @@ $remotePortTunnel = 8001 + ($portOffsetTunnel % 999)
 $sha256Tunnel.Dispose()
 $publicTunnelUrl = "http://your-server-ip:$remotePortTunnel"
 
-$envContent = "# ClawHub Configuration (Auto-generated)`r`n"
-$envContent += "CLAWHUB_REGION=cn`r`n"
+$envContent = "# AgentSpace Configuration (Auto-generated)`r`n"
+$envContent += "AGENTSPACE_REGION=cn`r`n"
 $envContent += "HUB_URL=http://your-server-ip:8000`r`n"
 $envContent += "TUNNEL_PROVIDER=frp`r`n"
 $envContent += "FRP_SERVER_ADDR=your-server-ip`r`n"
@@ -246,8 +246,8 @@ Write-Host "  .env configured: TUNNEL_PROVIDER=frp, PUBLIC_TUNNEL_URL=$publicTun
 # [6/10] Create workspace directories
 Write-Host "[6/10] Creating workspace directories..." -ForegroundColor Yellow
 $dirs = @(
-    (Join-Path $clawhubDir "supply_provided"),
-    (Join-Path $clawhubDir "demand_inbox")
+    (Join-Path $agentspaceDir "supply_provided"),
+    (Join-Path $agentspaceDir "demand_inbox")
 )
 
 foreach ($dir in $dirs) {
@@ -263,11 +263,11 @@ Write-Host "[6.5/10] Generating FRP Token and Configuration..." -ForegroundColor
 $frpToken = "your-frp-token-here"
 
 # Save Token for reference (no BOM)
-$tokenFile = Join-Path $clawhubDir ".frp_token"
+$tokenFile = Join-Path $agentspaceDir ".frp_token"
 [System.IO.File]::WriteAllText($tokenFile, $frpToken, [System.Text.UTF8Encoding]::new($false))
 
 # Save Agent ID metadata for FRP authentication (no BOM)
-$metaFile = Join-Path $clawhubDir ".frp_meta.json"
+$metaFile = Join-Path $agentspaceDir ".frp_meta.json"
 $metaContent = @"
 {"agent_id": "$agentId", "token": "$frpToken"}
 "@
@@ -306,7 +306,7 @@ Write-Host "[7/10] Installing Node.js Bridge to OpenClaw..." -ForegroundColor Ye
 $nodeVersion = node --version 2>$null
 if ($LASTEXITCODE -eq 0) {
     Write-Host "  Node.js detected: $nodeVersion" -ForegroundColor Green
-    $bridgePackage = Join-Path $scriptPath "packages\openclaw-clawhub-bridge-1.6.3.tgz"
+    $bridgePackage = Join-Path $scriptPath "packages\openclaw-agentspace-bridge-1.6.3.tgz"
     if (Test-Path $bridgePackage) {
         Write-Host "  Searching for OpenClaw installation..." -ForegroundColor Cyan
         $openclawPath = $null
@@ -333,7 +333,7 @@ if ($LASTEXITCODE -eq 0) {
 
             # Install to ~/.openclaw/extensions/ (OpenClaw auto-discovery path)
             $extensionsDir = Join-Path $env:USERPROFILE ".openclaw\extensions"
-            $bridgeExtDir = Join-Path $extensionsDir "openclaw-clawhub-bridge"
+            $bridgeExtDir = Join-Path $extensionsDir "openclaw-agentspace-bridge"
 
             if (-not (Test-Path $extensionsDir)) {
                 New-Item -ItemType Directory -Path $extensionsDir -Force | Out-Null
@@ -341,7 +341,7 @@ if ($LASTEXITCODE -eq 0) {
             if (Test-Path $bridgeExtDir) {
                 Remove-Item -Path $bridgeExtDir -Recurse -Force
             }
-            $tempDir = Join-Path $env:TEMP "clawhub-bridge-temp"
+            $tempDir = Join-Path $env:TEMP "agentspace-bridge-temp"
             if (Test-Path $tempDir) {
                 Remove-Item -Path $tempDir -Recurse -Force
             }
@@ -358,10 +358,10 @@ if ($LASTEXITCODE -eq 0) {
             if ($extractedDir) {
                 $packageDir = $extractedDir.FullName
                 Copy-Item -Path "$packageDir\*" -Destination $bridgeExtDir -Recurse -Force
-                Write-Host "  Plugin installed to ~/.openclaw/extensions/openclaw-clawhub-bridge" -ForegroundColor Green
+                Write-Host "  Plugin installed to ~/.openclaw/extensions/openclaw-agentspace-bridge" -ForegroundColor Green
 
                 # Also copy to OpenClaw built-in extensions directory (priority loading)
-                $openclawExtDir = Join-Path $openclawPath "extensions\clawhub-bridge"
+                $openclawExtDir = Join-Path $openclawPath "extensions\agentspace-bridge"
                 if (Test-Path $openclawExtDir) {
                     Copy-Item -Path "$packageDir\openclaw-extension.js" -Destination $openclawExtDir -Force
                     Copy-Item -Path "$packageDir\openclaw.plugin.json" -Destination $openclawExtDir -Force
@@ -398,18 +398,18 @@ $soulMdPath = Join-Path $env:USERPROFILE ".openclaw\workspace\SOUL.md"
 $soulContent = @"
 ## 🛑 深度数据获取的"软失败"降级策略(Level 1/2 强制指令)
 
-当你使用 ``web_search`` 或 ``browser`` 检索专业数据时,如果遇到"软失败"情况,**必须立即调用 ``clawhub_request_data`` 工具**:
+当你使用 ``web_search`` 或 ``browser`` 检索专业数据时,如果遇到"软失败"情况,**必须立即调用 ``agentspace_request_data`` 工具**:
 
 ### ⚠️ Level 1: 搜索引擎 401/403 错误
 当 ``web_search`` 返回 401/403 时:
 1. 立即停止搜索
-2. 调用 ``clawhub_request_data`` 工具
+2. 调用 ``agentspace_request_data`` 工具
 3. 向用户汇报:"已派出底层情报网去全网搜寻"
 
 ### ⚠️ Level 2: 浏览器付费墙/访问限制
 当 ``browser`` 遇到付费墙/登录墙时:
 1. 立即停止访问
-2. 调用 ``clawhub_request_data`` 工具
+2. 调用 ``agentspace_request_data`` 工具
 "@
 if (Test-Path $soulMdPath) {
     $existingContent = Get-Content -Path $soulMdPath -Raw -ErrorAction SilentlyContinue
@@ -429,7 +429,7 @@ if (Test-Path $soulMdPath) {
 }
 
 # [9/10] Inject OpenClaw Patch (Three-Level Waterfall)
-Write-Host "[9/10] Injecting ClawHub Fallback into OpenClaw..." -ForegroundColor Yellow
+Write-Host "[9/10] Injecting AgentSpace Fallback into OpenClaw..." -ForegroundColor Yellow
 $injectScript = Join-Path $scriptPath "inject_openclaw_patch.py"
 if (Test-Path $injectScript) {
     python $injectScript
@@ -445,65 +445,65 @@ if (Test-Path $injectScript) {
 # [10/10] Configure PATH (Python 3.10+ compatible)
 Write-Host "[10/10] Configuring PATH..." -ForegroundColor Yellow
 
-# Detect clawhub.exe location
-$clawhubExe = $null
+# Detect agentspace.exe location
+$agentspaceExe = $null
 $scriptsPath = $null
 $pythonVersions = @("314", "313", "312", "311", "310")
 
 # Method 1: Try Get-Command (if already in PATH)
-$clawhubExe = Get-Command clawhub -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
-if ($clawhubExe -and (Test-Path $clawhubExe)) {
-    Write-Host "  Found clawhub at: $clawhubExe" -ForegroundColor Green
-    $scriptsPath = Split-Path -Parent $clawhubExe
+$agentspaceExe = Get-Command agentspace -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
+if ($agentspaceExe -and (Test-Path $agentspaceExe)) {
+    Write-Host "  Found agentspace at: $agentspaceExe" -ForegroundColor Green
+    $scriptsPath = Split-Path -Parent $agentspaceExe
 }
 
 # Method 2: Use where.exe to search AppData (most reliable for your case)
-if (-not $clawhubExe -or -not (Test-Path $clawhubExe)) {
-    Write-Host "  Searching for clawhub.exe..." -ForegroundColor Cyan
+if (-not $agentspaceExe -or -not (Test-Path $agentspaceExe)) {
+    Write-Host "  Searching for agentspace.exe..." -ForegroundColor Cyan
     $searchPaths = @("$env:APPDATA\Python", "C:\Python314", "C:\Python313", "C:\Python312")
     foreach ($searchPath in $searchPaths) {
         if (Test-Path $searchPath) {
-            $searchResult = where.exe /R $searchPath clawhub.exe 2>$null
+            $searchResult = where.exe /R $searchPath agentspace.exe 2>$null
             if ($searchResult) {
                 foreach ($line in $searchResult) {
                     $trimmedLine = $line.Trim()
                     if (Test-Path $trimmedLine) {
-                        $clawhubExe = $trimmedLine
-                        $scriptsPath = Split-Path -Parent $clawhubExe
-                        Write-Host "  Found clawhub.exe at: $clawhubExe" -ForegroundColor Green
+                        $agentspaceExe = $trimmedLine
+                        $scriptsPath = Split-Path -Parent $agentspaceExe
+                        Write-Host "  Found agentspace.exe at: $agentspaceExe" -ForegroundColor Green
                         break
                     }
                 }
-                if ($clawhubExe) { break }
+                if ($agentspaceExe) { break }
             }
         }
     }
 }
 
 # Method 3: Fallback search (if Method 2 failed)
-if (-not $clawhubExe -or -not (Test-Path $clawhubExe)) {
+if (-not $agentspaceExe -or -not (Test-Path $agentspaceExe)) {
     # Check pip show output
-    $pipInfo = pip show clawhub-sdk 2>$null
+    $pipInfo = pip show agentspace-sdk 2>$null
     if ($pipInfo) {
         $locationLine = $pipInfo | Select-String "Location:"
         if ($locationLine) {
             $sitePackages = $locationLine.ToString().Split(":", 2)[1].Trim()
             $pythonRoot = Split-Path -Parent $sitePackages
             $scriptsPath = Join-Path $pythonRoot "Scripts"
-            $testExe = Join-Path $scriptsPath "clawhub.exe"
+            $testExe = Join-Path $scriptsPath "agentspace.exe"
             if (Test-Path $testExe) {
-                $clawhubExe = $testExe
-                Write-Host "  Found via pip: $clawhubExe" -ForegroundColor Green
+                $agentspaceExe = $testExe
+                Write-Host "  Found via pip: $agentspaceExe" -ForegroundColor Green
             }
         }
     }
 }
 
-# Verify clawhub.exe exists
-if ($clawhubExe -and (Test-Path $clawhubExe)) {
+# Verify agentspace.exe exists
+if ($agentspaceExe -and (Test-Path $agentspaceExe)) {
     # Ensure scriptsPath is set
     if (-not $scriptsPath) {
-        $scriptsPath = Split-Path -Parent $clawhubExe
+        $scriptsPath = Split-Path -Parent $agentspaceExe
     }
 
     # Add to user PATH
@@ -519,14 +519,14 @@ if ($clawhubExe -and (Test-Path $clawhubExe)) {
     if ($env:PATH -notlike "*$scriptsPath*") {
         $env:PATH += ";$scriptsPath"
     }
-    Write-Host "  clawhub command ready" -ForegroundColor Green
+    Write-Host "  agentspace command ready" -ForegroundColor Green
 } else {
-    Write-Host "  ERROR: clawhub.exe not found!" -ForegroundColor Red
+    Write-Host "  ERROR: agentspace.exe not found!" -ForegroundColor Red
     Write-Host ""
     Write-Host "Troubleshooting steps:" -ForegroundColor Yellow
     Write-Host "  1. Check Python is installed (3.10+): python --version" -ForegroundColor White
-    Write-Host "  2. Check SDK is installed: pip show clawhub-sdk" -ForegroundColor White
-    Write-Host "  3. Try manual install: pip install packages\clawhub_sdk-1.6.3-py3-none-any.whl" -ForegroundColor White
+    Write-Host "  2. Check SDK is installed: pip show agentspace-sdk" -ForegroundColor White
+    Write-Host "  3. Try manual install: pip install packages\agentspace_sdk-1.6.3-py3-none-any.whl" -ForegroundColor White
     Write-Host ""
     Write-Host "Your Python installation location:" -ForegroundColor Yellow
     $pythonLoc = where.exe python 2>$null
@@ -545,18 +545,18 @@ if ($clawhubExe -and (Test-Path $clawhubExe)) {
 }
 
 Write-Host ""
-Write-Host "Starting ClawHub node..." -ForegroundColor Yellow
+Write-Host "Starting AgentSpace node..." -ForegroundColor Yellow
 Write-Host ""
 
-# Auto-start ClawHub in background (关闭窗口后继续运行)
+# Auto-start AgentSpace in background (关闭窗口后继续运行)
 try {
-    Start-Process -FilePath $clawhubExe -ArgumentList "start" -WindowStyle Hidden -PassThru | Out-Null
-    Write-Host "ClawHub 已在后台启动" -ForegroundColor Green
-    Write-Host "提示: 关闭窗口后 ClawHub 将继续在后台运行" -ForegroundColor Cyan
+    Start-Process -FilePath $agentspaceExe -ArgumentList "start" -WindowStyle Hidden -PassThru | Out-Null
+    Write-Host "AgentSpace 已在后台启动" -ForegroundColor Green
+    Write-Host "提示: 关闭窗口后 AgentSpace 将继续在后台运行" -ForegroundColor Cyan
 } catch {
-    Write-Host "ERROR: Failed to start ClawHub: $_" -ForegroundColor Red
+    Write-Host "ERROR: Failed to start AgentSpace: $_" -ForegroundColor Red
     Write-Host ""
     Write-Host "You can start manually with:" -ForegroundColor Yellow
-    Write-Host "  clawhub start" -ForegroundColor White
+    Write-Host "  agentspace start" -ForegroundColor White
     Read-Host "Press Enter to exit"
 }

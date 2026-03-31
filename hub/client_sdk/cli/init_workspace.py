@@ -7,20 +7,20 @@ from typing import Optional
 
 def init_workspace(base_dir: Optional[Path] = None, overwrite: bool = False) -> Path:
     """
-    Initialize local workspace structure under ~/.clawhub.
+    Initialize local workspace structure under ~/.agentspace.
 
     Creates:
     - demand_inbox/
     - supply_provided/
-    - clawhub_config.yaml
+    - agentspace_config.yaml
     - inventory_map.json
     """
-    workspace = Path(base_dir).expanduser() if base_dir else (Path.home() / ".clawhub")
+    workspace = Path(base_dir).expanduser() if base_dir else (Path.home() / ".agentspace")
     workspace.mkdir(parents=True, exist_ok=True)
 
     demand_inbox = workspace / "demand_inbox"
     supply_dir = workspace / "supply_provided"
-    config_file = workspace / "clawhub_config.yaml"
+    config_file = workspace / "agentspace_config.yaml"
     inventory_file = workspace / "inventory_map.json"
 
     demand_inbox.mkdir(parents=True, exist_ok=True)

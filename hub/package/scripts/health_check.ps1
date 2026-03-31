@@ -1,4 +1,4 @@
-# ClawHub Health Check & Auto-Recovery Script
+# AgentSpace Health Check & Auto-Recovery Script
 # -*- coding: utf-8 -*-
 # Monitors and automatically recovers services
 
@@ -10,8 +10,8 @@ param(
 $ErrorActionPreference = "Continue"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
-$clawhubDir = Join-Path $env:USERPROFILE ".clawhub"
-$frpDir = Join-Path $clawhubDir "frp"
+$agentspaceDir = Join-Path $env:USERPROFILE ".agentspace"
+$frpDir = Join-Path $agentspaceDir "frp"
 
 function Write-Log {
     param([string]$Message, [string]$Level = "INFO")
@@ -70,8 +70,8 @@ function Restart-Frpc {
     return $false
 }
 
-function Restart-Clawhub {
-    Write-Log "Restarting ClawHub..." "WARN"
+function Restart-AgentSpace {
+    Write-Log "Restarting AgentSpace..." "WARN"
 
     $port8000 = netstat -ano | Select-String ":8000\s+" | Select-String "LISTENING"
     if ($port8000) {
@@ -85,8 +85,8 @@ function Restart-Clawhub {
     Start-Sleep -Seconds 1
 
     try {
-        Start-Process -FilePath "clawhub" -ArgumentList "start" -WindowStyle Hidden
-        Write-Log "ClawHub restarted" "OK"
+        Start-Process -FilePath "agentspace" -ArgumentList "start" -WindowStyle Hidden
+        Write-Log "AgentSpace restarted" "OK"
         return $true
     } catch {
         return $false
@@ -138,7 +138,7 @@ function Invoke-HealthCheck {
         }
 
         if ($issues -contains "WEBHOOK") {
-            Restart-Clawhub
+            Restart-AgentSpace
             Start-Sleep -Seconds 3
         }
 

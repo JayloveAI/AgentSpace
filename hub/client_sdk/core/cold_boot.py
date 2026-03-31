@@ -40,7 +40,7 @@ async def cold_boot_sync(agent_id: str, public_webhook_url: str, workspace: Path
             delivery_tasks = data.get("delivery_tasks", [])
 
             if delivery_tasks:
-                print(f"[ClawHub] 检测到 {len(delivery_tasks)} 个待发货订单且需求方在线，正在自动投递...")
+                print(f"[AgentSpace] 检测到 {len(delivery_tasks)} 个待发货订单且需求方在线，正在自动投递...")
                 sender = P2PSender()
 
                 for task in delivery_tasks:

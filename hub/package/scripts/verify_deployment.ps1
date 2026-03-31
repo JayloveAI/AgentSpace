@@ -1,12 +1,12 @@
-# ClawHub Deployment Verification Script
+# AgentSpace Deployment Verification Script
 # -*- coding: utf-8 -*-
-# Run this script to verify your ClawHub installation
+# Run this script to verify your AgentSpace installation
 
 $ErrorActionPreference = "Continue"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 Write-Host "============================================" -ForegroundColor Cyan
-Write-Host "  ClawHub Deployment Verification" -ForegroundColor Cyan
+Write-Host "  AgentSpace Deployment Verification" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -23,28 +23,28 @@ if ($python) {
     $errors += "Python"
 }
 
-Write-Host "[2] Checking ClawHub SDK..." -ForegroundColor Yellow
-$sdk = pip show clawhub-sdk 2>$null
+Write-Host "[2] Checking AgentSpace SDK..." -ForegroundColor Yellow
+$sdk = pip show agentspace-sdk 2>$null
 if ($sdk) {
     $version = ($sdk | Select-String "Version:").ToString().Replace("Version:", "").Trim()
-    Write-Host "    OK: clawhub-sdk $version" -ForegroundColor Green
+    Write-Host "    OK: agentspace-sdk $version" -ForegroundColor Green
 } else {
-    Write-Host "    FAIL: clawhub-sdk not installed" -ForegroundColor Red
+    Write-Host "    FAIL: agentspace-sdk not installed" -ForegroundColor Red
     $errors += "SDK"
 }
 
-Write-Host "[3] Checking clawhub CLI..." -ForegroundColor Yellow
-$cli = Get-Command clawhub -ErrorAction SilentlyContinue
+Write-Host "[3] Checking agentspace CLI..." -ForegroundColor Yellow
+$cli = Get-Command agentspace -ErrorAction SilentlyContinue
 if ($cli) {
-    Write-Host "    OK: clawhub command available" -ForegroundColor Green
+    Write-Host "    OK: agentspace command available" -ForegroundColor Green
     Write-Host "         Location: $($cli.Source)" -ForegroundColor Cyan
 } else {
-    Write-Host "    FAIL: clawhub command not in PATH" -ForegroundColor Red
+    Write-Host "    FAIL: agentspace command not in PATH" -ForegroundColor Red
     $errors += "CLI"
 }
 
 Write-Host "[4] Checking FRP client..." -ForegroundColor Yellow
-$frpcExe = Join-Path $env:USERPROFILE ".clawhub\frp\frpc.exe"
+$frpcExe = Join-Path $env:USERPROFILE ".agentspace\frp\frpc.exe"
 if (Test-Path $frpcExe) {
     Write-Host "    OK: frpc.exe installed" -ForegroundColor Green
     Write-Host "         Location: $frpcExe" -ForegroundColor Cyan
@@ -54,7 +54,7 @@ if (Test-Path $frpcExe) {
 }
 
 Write-Host "[5] Checking FRP configuration..." -ForegroundColor Yellow
-$frpcIni = Join-Path $env:USERPROFILE ".clawhub\frp\frpc.toml"
+$frpcIni = Join-Path $env:USERPROFILE ".agentspace\frp\frpc.toml"
 if (Test-Path $frpcIni) {
     $frpConfig = Get-Content $frpcIni -Raw
     if ($frpConfig -match "auth.token = ""your-frp-token-here""") {
@@ -74,7 +74,7 @@ if (Test-Path $frpcIni) {
 }
 
 Write-Host "[6] Checking .env configuration..." -ForegroundColor Yellow
-$envFile = Join-Path $env:USERPROFILE ".clawhub\.env"
+$envFile = Join-Path $env:USERPROFILE ".agentspace\.env"
 if (Test-Path $envFile) {
     $envContent = Get-Content $envFile -Raw
     Write-Host "    OK: .env file exists" -ForegroundColor Green
@@ -91,7 +91,7 @@ if (Test-Path $envFile) {
 }
 
 Write-Host "[7] Checking Agent ID..." -ForegroundColor Yellow
-$agentIdFile = Join-Path $env:USERPROFILE ".clawhub\.agent_id"
+$agentIdFile = Join-Path $env:USERPROFILE ".agentspace\.agent_id"
 if (Test-Path $agentIdFile) {
     $agentId = Get-Content $agentIdFile -Raw
     $agentId = $agentId.Trim()
@@ -102,9 +102,9 @@ if (Test-Path $agentIdFile) {
 }
 
 Write-Host "[8] Checking workspace directories..." -ForegroundColor Yellow
-$clawhubDir = Join-Path $env:USERPROFILE ".clawhub"
-$supplyDir = Join-Path $clawhubDir "supply_provided"
-$demandDir = Join-Path $clawhubDir "demand_inbox"
+$agentspaceDir = Join-Path $env:USERPROFILE ".agentspace"
+$supplyDir = Join-Path $agentspaceDir "supply_provided"
+$demandDir = Join-Path $agentspaceDir "demand_inbox"
 
 $dirsOk = $true
 if (Test-Path $supplyDir) {
@@ -163,8 +163,8 @@ Write-Host ""
 if ($errors.Count -eq 0) {
     Write-Host "  [PASS] All critical checks passed!" -ForegroundColor Green
     Write-Host ""
-    Write-Host "  Ready to start: clawhub start" -ForegroundColor White
-    Write-Host "  Or run: .\start_clawhub_node.ps1" -ForegroundColor White
+    Write-Host "  Ready to start: agentspace start" -ForegroundColor White
+    Write-Host "  Or run: .\start_agentspace_node.ps1" -ForegroundColor White
 } else {
     Write-Host "  [FAIL] Found $($errors.Count) error(s):" -ForegroundColor Red
     foreach ($e in $errors) {

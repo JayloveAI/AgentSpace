@@ -5,25 +5,24 @@ const os = require('os');
 const { spawn } = require('child_process');
 
 // 📬 通知目录路径
-const NOTIFICATION_DIR = path.join(os.homedir(), '.clawhub', 'notifications');
+const NOTIFICATION_DIR = path.join(os.homedir(), '.agentspace', 'notifications');
 
 // 📬 待处理通知队列（内存存储）
 const pendingNotifications = [];
 
-// 🔧 ClawHub 进程管理
-let clawhubProcess = null;
-const CLAWHUB_PID_FILE = path.join(os.homedir(), '.clawhub', '.clawhub.pid');
+// AgentSpace 进程 management
+let agentspaceProcess = null;const AGENTSPACE_PID_FILE = path.join(os.homedir(), '.agentspace', '.agentspace.pid');
 
-function isClawHubRunning() {
-  if (!clawhubProcess) {
+function isAgentSpaceRunning() {
+  if (!agentspaceProcess) {
     try {
-      if (fs.existsSync(CLAWHUB_PID_FILE)) {
-        const pid = parseInt(fs.readFileSync(CLAWHUB_PID_FILE, 'utf8').trim(), 10);
+      if (fs.existsSync(AGENTSPACE_PID_FILE)) {
+        const pid = parseInt(fs.readFileSync(AGENTSPACE_PID_FILE, 'utf8').trim(), 10);
         try {
           process.kill(pid, 0);
           return true;
         } catch (e) {
-          fs.unlinkSync(CLAWHUB_PID_FILE);
+          fs.unlinkSync(AGENTSPACE_PID_FILE);
         }
       }
     } catch (e) {}
@@ -32,55 +31,55 @@ function isClawHubRunning() {
   return true;
 }
 
-function startClawHub(logger) {
-  if (isClawHubRunning()) {
-    logger?.info('[ClawHub] ClawHub 已在运行中，跳过启动');
+function startAgentSpace(logger) {
+  if (isAgentSpaceRunning()) {
+    logger?.info('[AgentSpace] AgentSpace 已在运行中，跳过启动');
     return;
   }
 
-  logger?.info('[ClawHub] 正在启动 ClawHub...');
+  logger?.info('[AgentSpace] 正在启动 AgentSpace...');
 
   const isWindows = os.platform() === 'win32';
-  const clawhubCmd = isWindows ? 'clawhub.exe' : 'clawhub';
+  const agentspaceCmd = isWindows ? 'agentspace.exe' : 'agentspace';
 
   try {
-    clawhubProcess = spawn(clawhubCmd, ['start'], {
+    agentspaceProcess = spawn(agentspaceCmd, ['start'], {
       detached: !isWindows,
       stdio: 'ignore',
       shell: isWindows
     });
 
     if (isWindows) {
-      clawhubProcess.unref();
+      agentspaceProcess.unref();
     }
 
-    clawhubProcess.on('error', (err) => {
-      logger?.error(`[ClawHub] 启动失败: ${err.message}`);
-      clawhubProcess = null;
+    agentspaceProcess.on('error', (err) => {
+      logger?.error(`[AgentSpace] 启动失败: ${err.message}`);
+      agentspaceProcess = null;
     });
 
     setTimeout(() => {
-      if (isClawHubRunning()) {
-        logger?.info('[ClawHub] ClawHub 启动成功');
+      if (isAgentSpaceRunning()) {
+        logger?.info('[AgentSpace] AgentSpace 启动成功');
       }
     }, 3000);
 
   } catch (err) {
-    logger?.error(`[ClawHub] 启动异常: ${err.message}`);
+    logger?.error(`[AgentSpace] 启动异常: ${err.message}`);
   }
 }
 
-function stopClawHub(logger) {
-  if (!isClawHubRunning()) {
-    logger?.info('[ClawHub] ClawHub 未运行');
+function stopAgentSpace(logger) {
+  if (!isAgentSpaceRunning()) {
+    logger?.info('[AgentSpace] AgentSpace 未运行');
     return;
   }
 
-  logger?.info('[ClawHub] 正在停止 ClawHub...');
+  logger?.info('[AgentSpace] 正在停止 AgentSpace...');
 
   try {
-    if (fs.existsSync(CLAWHUB_PID_FILE)) {
-      const pid = parseInt(fs.readFileSync(CLAWHUB_PID_FILE, 'utf8').trim(), 10);
+    if (fs.existsSync(AGENTSPACE_PID_FILE)) {
+      const pid = parseInt(fs.readFileSync(AGENTSPACE_PID_FILE, 'utf8').trim(), 10);
       try {
         process.kill(pid, 'SIGTERM');
         setTimeout(() => {
@@ -91,21 +90,21 @@ function stopClawHub(logger) {
 
     const isWindows = os.platform() === 'win32';
     if (isWindows) {
-      spawn('taskkill', ['/F', '/IM', 'clawhub.exe'], { stdio: 'ignore' });
+      spawn('taskkill', ['/F', '/IM', 'agentspace.exe'], { stdio: 'ignore' });
     } else {
-      spawn('pkill', ['-f', 'clawhub'], { stdio: 'ignore' });
+      spawn('pkill', ['-f', 'agentspace'], { stdio: 'ignore' });
     }
 
-    logger?.info('[ClawHub] 已发送停止信号');
+    logger?.info('[AgentSpace] 已发送停止信号');
 
   } catch (err) {
-    logger?.error(`[ClawHub] 停止异常: ${err.message}`);
+    logger?.error(`[AgentSpace] 停止异常: ${err.message}`);
   }
 }
 
 // 异步获取 Token
 async function getLocalTokenAsync() {
-  const tokenPath = path.join(os.homedir(), ".clawhub", ".local_token");
+  const tokenPath = path.join(os.homedir(), ".agentspace", ".local_token");
   try {
     const data = await fsPromises.readFile(tokenPath, "utf-8");
     return data.trim();
@@ -127,7 +126,7 @@ function showDeliveryNotification(notice, logger) {
 
   if (notice.type === 'demand_expired') {
     const msg = `
-🔔 === ClawHub 通知 === 🔔
+🔔 === AgentSpace 通知 === 🔔
 ⚠️ 【需求过期】
 📋 原任务: ${notice.original_task || '未知'}
 💬 ${notice.message || '需求已过期，未找到数据。'}
@@ -143,7 +142,7 @@ function showDeliveryNotification(notice, logger) {
   }
 
   const msg = `
-🔔 === ClawHub 情报送达 === 🔔
+🔔 === AgentSpace 情报送达 === 🔔
 🎉 【数据送达】${notice.filename || path.basename(notice.file_path || '')}
 📂 位置: ${notice.file_path}
 📋 原任务: ${notice.original_task || '未知'}
@@ -167,14 +166,14 @@ function startNotificationWatcher(logger) {
   if (!fs.existsSync(NOTIFICATION_DIR)) {
     try {
       fs.mkdirSync(NOTIFICATION_DIR, { recursive: true });
-      logger?.info(`[ClawHub] 📁 创建通知目录: ${NOTIFICATION_DIR}`);
+      logger?.info(`[AgentSpace] 📁 创建通知目录: ${NOTIFICATION_DIR}`);
     } catch (e) {
-      logger?.error(`[ClawHub] 无法创建通知目录: ${e.message}`);
+      logger?.error(`[AgentSpace] 无法创建通知目录: ${e.message}`);
       return;
     }
   }
 
-  logger?.info(`[ClawHub] 👀 开始监听通知目录: ${NOTIFICATION_DIR}`);
+  logger?.info(`[AgentSpace] 👀 开始监听通知目录: ${NOTIFICATION_DIR}`);
 
   const watcher = fs.watch(NOTIFICATION_DIR, (eventType, filename) => {
     if (!filename || !filename.endsWith('.json')) return;
@@ -187,17 +186,17 @@ function startNotificationWatcher(logger) {
         try {
           const content = fs.readFileSync(filePath, 'utf8');
           const notice = JSON.parse(content);
-          logger?.info(`[ClawHub] 📬 收到通知: ${notice.type || 'unknown'}`);
+          logger?.info(`[AgentSpace] 📬 收到通知: ${notice.type || 'unknown'}`);
           showDeliveryNotification(notice, logger);
         } catch (e) {
-          logger?.error(`[ClawHub] 解析通知失败: ${e.message}`);
+          logger?.error(`[AgentSpace] 解析通知失败: ${e.message}`);
         }
       }, 300);
     }
   });
 
   watcher.on('error', (e) => {
-    logger?.error(`[ClawHub] 监听器错误: ${e.message}`);
+    logger?.error(`[AgentSpace] 监听器错误: ${e.message}`);
   });
 
   return watcher;
@@ -207,7 +206,7 @@ function startNotificationWatcher(logger) {
 function formatNotifications(notifications) {
   if (notifications.length === 0) return '';
 
-  const lines = ['\n🔔 === ClawHub 情报送达 === 🔔\n'];
+  const lines = ['\n🔔 === AgentSpace 情报送达 === 🔔\n'];
 
   for (const n of notifications) {
     if (n.type === 'expired') {
@@ -240,7 +239,7 @@ async function executeDataRequest(params, logger) {
   const notificationMsg = formatNotifications(notifications);
 
   if (!token) {
-    return { content: [{ type: "text", text: notificationMsg + "ClawHub 未启动或 Token 文件不存在。" }] };
+    return { content: [{ type: "text", text: notificationMsg + "AgentSpace 未启动或 Token 文件不存在。" }] };
   }
 
   try {
@@ -270,7 +269,7 @@ async function executeDataRequest(params, logger) {
         type: "text",
         text: (
           notificationMsg +
-          `数据需求已成功提交至 ClawHub 异步外包网络 (需求 ID: ${result.demand_id})。\n` +
+          `数据需求已成功提交至 AgentSpace 异步外包网络 (需求 ID: ${result.demand_id})。\n` +
           `系统底层正在全力进行全网匹配与资料获取。\n\n` +
           `【状态与建议】：\n` +
           `1. 状态: 资料获取完全异步,送达后将通过独立通道通知。\n` +
@@ -280,8 +279,8 @@ async function executeDataRequest(params, logger) {
       }]
     };
   } catch (error) {
-    logger?.error(`[ClawHub Bridge] 工具执行失败: ${error.message}`);
-    return { content: [{ type: "text", text: notificationMsg + `ClawHub 服务连接失败: ${error.message}` }] };
+    logger?.error(`[AgentSpace Bridge] 工具执行失败: ${error.message}`);
+    return { content: [{ type: "text", text: notificationMsg + `AgentSpace 服务连接失败: ${error.message}` }] };
   }
 }
 
@@ -306,13 +305,13 @@ async function registerWithNewSDK() {
     if (!sdkPath) return false;
 
     const { registerTool, onStart, onStop, createLogger } = await import(sdkPath);
-    logger = createLogger('ClawHub Bridge');
+    logger = createLogger('AgentSpace Bridge');
 
-    logger.info('[ClawHub Bridge] 使用新版 OpenClaw Plugin SDK');
+    logger.info('[AgentSpace Bridge] 使用新版 OpenClaw Plugin SDK');
 
     registerTool({
-      name: 'clawhub_request_data',
-      label: 'ClawHub 数据请求',
+      name: 'agentspace_request_data',
+      label: 'AgentSpace 数据请求',
       description: '【终极数据获取与兜底工具】当你遇到 401/403 错误、付费墙，或本地缺少核心数据时，必须调用此工具向全网发起异步外包求助。',
       parameters: {
         type: 'object',
@@ -327,29 +326,29 @@ async function registerWithNewSDK() {
     });
 
     registerTool({
-      name: 'clawhub_check_delivery',
-      label: 'ClawHub 检查投递',
+      name: 'agentspace_check_delivery',
+      label: 'AgentSpace 检查投递',
       description: '【投递状态检查】检查是否有新的数据投递通知。',
       parameters: { type: 'object', properties: {}, required: [] },
       execute: async () => executeDeliveryCheck(logger)
     });
 
     onStart(() => {
-      logger.info('[ClawHub] OpenClaw 启动，触发 ClawHub 同步启动');
-      startClawHub(logger);
+      logger.info('[AgentSpace] OpenClaw 启动，触发 AgentSpace 同步启动');
+      startAgentSpace(logger);
     });
 
     onStop(() => {
-      logger.info('[ClawHub] OpenClaw 关闭，触发 ClawHub 同步关闭');
-      stopClawHub(logger);
+      logger.info('[AgentSpace] OpenClaw 关闭，触发 AgentSpace 同步关闭');
+      stopAgentSpace(logger);
     });
 
     startNotificationWatcher(logger);
-    logger.info('[ClawHub Bridge] 初始化完成! (新版 SDK)');
+    logger.info('[AgentSpace Bridge] 初始化完成! (新版 SDK)');
     return true;
 
   } catch (e) {
-    console.error('[ClawHub Bridge] 新版 SDK 加载失败:', e.message);
+    console.error('[AgentSpace Bridge] 新版 SDK 加载失败:', e.message);
     return false;
   }
 }
@@ -374,13 +373,13 @@ async function findPluginSDKPath() {
 
 // ============ 旧版 API 兼容 (2026.3.22 之前) ============
 function registerWithOldAPI(api) {
-  api.logger.info('[ClawHub Bridge] 使用旧版 OpenClaw API');
+  api.logger.info('[AgentSpace Bridge] 使用旧版 OpenClaw API');
 
   startNotificationWatcher(api.logger);
 
   api.registerTool({
-    name: 'clawhub_request_data',
-    label: 'ClawHub 数据请求',
+    name: 'agentspace_request_data',
+    label: 'AgentSpace 数据请求',
     description: '【终极数据获取与兜底工具】当你遇到 401/403 错误、付费墙，或本地缺少核心数据时，必须调用此工具向全网发起异步外包求助。',
     parameters: {
       type: 'object',
@@ -395,30 +394,30 @@ function registerWithOldAPI(api) {
   });
 
   api.registerTool({
-    name: 'clawhub_check_delivery',
-    label: 'ClawHub 检查投递',
+    name: 'agentspace_check_delivery',
+    label: 'AgentSpace 检查投递',
     description: '【投递状态检查】检查是否有新的数据投递通知。',
     parameters: { type: 'object', properties: {}, required: [] },
     execute: async () => executeDeliveryCheck(api.logger)
   });
 
-  api.logger.info('[ClawHub Bridge] 初始化完成! (旧版 API)');
+  api.logger.info('[AgentSpace Bridge] 初始化完成! (旧版 API)');
 
   // 生命周期钩子
   let lifecycleHookRegistered = false;
 
   if (typeof api.onStart === 'function') {
     api.onStart(() => {
-      api.logger.info('[ClawHub] OpenClaw 启动，触发 ClawHub 同步启动');
-      startClawHub(api.logger);
+      api.logger.info('[AgentSpace] OpenClaw 启动，触发 AgentSpace 同步启动');
+      startAgentSpace(api.logger);
     });
     lifecycleHookRegistered = true;
   }
 
   if (typeof api.onStop === 'function') {
     api.onStop(() => {
-      api.logger.info('[ClawHub] OpenClaw 关闭，触发 ClawHub 同步关闭');
-      stopClawHub(api.logger);
+      api.logger.info('[AgentSpace] OpenClaw 关闭，触发 AgentSpace 同步关闭');
+      stopAgentSpace(api.logger);
     });
     lifecycleHookRegistered = true;
   }
@@ -429,11 +428,11 @@ function registerWithOldAPI(api) {
       try {
         api.on(event, () => {
           if (event.includes('start') || event === 'ready') {
-            api.logger.info(`[ClawHub] 检测到 ${event} 事件，启动 ClawHub`);
-            startClawHub(api.logger);
+            api.logger.info(`[AgentSpace] 检测到 ${event} 事件，启动 AgentSpace`);
+            startAgentSpace(api.logger);
           } else if (event.includes('stop') || event === 'shutdown') {
-            api.logger.info(`[ClawHub] 检测到 ${event} 事件，关闭 ClawHub`);
-            stopClawHub(api.logger);
+            api.logger.info(`[AgentSpace] 检测到 ${event} 事件，关闭 AgentSpace`);
+            stopAgentSpace(api.logger);
           }
         });
       } catch (e) {}
@@ -442,7 +441,7 @@ function registerWithOldAPI(api) {
   }
 
   if (!lifecycleHookRegistered) {
-    api.logger.info('[ClawHub] 使用健康检查轮询模式同步');
+    api.logger.info('[AgentSpace] 使用健康检查轮询模式同步');
     let wasHealthy = false;
     setInterval(async () => {
       try {
@@ -450,16 +449,16 @@ function registerWithOldAPI(api) {
         const response = await _fetch('http://127.0.0.1:8000/health', { timeout: 2000 });
         const isHealthy = response.ok;
         if (isHealthy && !wasHealthy) {
-          api.logger.info('[ClawHub] OpenClaw 已就绪');
-          startClawHub(api.logger);
+          api.logger.info('[AgentSpace] OpenClaw 已就绪');
+          startAgentSpace(api.logger);
         } else if (!isHealthy && wasHealthy) {
-          api.logger.info('[ClawHub] OpenClaw 已关闭');
-          stopClawHub(api.logger);
+          api.logger.info('[AgentSpace] OpenClaw 已关闭');
+          stopAgentSpace(api.logger);
         }
         wasHealthy = isHealthy;
       } catch (e) {
         if (wasHealthy) {
-          api.logger.info('[ClawHub] OpenClaw 连接断开');
+          api.logger.info('[AgentSpace] OpenClaw 连接断开');
           wasHealthy = false;
         }
       }

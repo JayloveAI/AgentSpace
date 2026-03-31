@@ -1,4 +1,4 @@
-﻿"""Agent Universal Hub - Client SDK."""
+﻿"""AgentSpace - Client SDK."""
 
 from .core.connector import HubConnector
 from .webhook.server import WebhookServer
