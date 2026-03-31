@@ -30,6 +30,7 @@ node_modules/
 .idea/
 .vscode/
 .trae/
+.claude/
 *.swp
 *.swo
 
