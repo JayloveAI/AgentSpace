@@ -20,7 +20,10 @@ except ImportError:
 # ============================================================================
 # 数据库配置
 # ============================================================================
-DATABASE_URL = os.getenv("DATABASE_URL", "")
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://agenthub:agenthub_dev_password@localhost:5432/agent_hub"
+)
 
 
 # ============================================================================
@@ -28,7 +31,10 @@ DATABASE_URL = os.getenv("DATABASE_URL", "")
 # ============================================================================
 # 对称加密密钥 - Hub 签发 JWT，客户端验证
 # 开源时 SDK 内置默认值，企业部署通过环境变量覆盖
-HUB_JWT_SECRET = os.getenv("HUB_JWT_SECRET", "")
+HUB_JWT_SECRET = os.getenv(
+    "HUB_JWT_SECRET",
+    "sk-hub-default-jwt-secret-2026"
+)
 
 # JWT 有效期（分钟）- 10分钟内必须完成握手
 JWT_EXPIRATION_MINUTES = int(os.getenv("JWT_EXPIRATION_MINUTES", "10"))
@@ -44,14 +50,18 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-ada-002")
 
 # GLM-5 (智谱) 配置
+# 优先使用环境变量，如果没有则使用硬编码的 API Key
 GLM_API_KEY = os.getenv("GLM_API_KEY", "")
+if not GLM_API_KEY:
+    # 硬编码 API Key（仅用于测试）
+    GLM_API_KEY = "e6edc7b93f2d4b1e8280b73d37228e40.pOs5JhSDSFOxqcfG"
 GLM_EMBEDDING_MODEL = os.getenv("GLM_EMBEDDING_MODEL", "embedding-3")
 
 # 根据提供商选择配置
 if EMBEDDING_PROVIDER == "glm":
     EMBEDDING_API_KEY = GLM_API_KEY
     EMBEDDING_MODEL = GLM_EMBEDDING_MODEL
-    # GLM embedding-2: 1024维, embedding-3: 2048维(默认)
+    # GLM embedding-2: 1024维, embedding-3: 2048维
     EMBEDDING_DIMENSIONS = 2048 if GLM_EMBEDDING_MODEL == "embedding-3" else 1024
 else:
     EMBEDDING_API_KEY = OPENAI_API_KEY

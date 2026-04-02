@@ -48,8 +48,9 @@ class UniversalResourceGateway:
         self._task_cache = TaskCache()
         self._bridge = OpenClawBridge()
         self._background_tasks = set()  # Prevent GC of background tasks
-        # 👈 [新增] 从配置中获取公网隧道 URL
+        # 从配置中获取公网隧道 URL
         self.public_base_url = self.config.get("public_tunnel_url") if self.config else None
+        self._recovery_done = False  # V1.6.4: 标记是否已完成启动恢复
 
     async def resolve_resource(self, error: Any) -> Any:
         """Legacy blocking resolve method (for backward compatibility)."""
@@ -91,6 +92,13 @@ class UniversalResourceGateway:
         print(f"[DEBUG-PUBLISH] error: {error}")
         print(f"[DEBUG-PUBLISH] original_task: {original_task}")
         print(f"[DEBUG-PUBLISH] user_id: {user_id}")
+
+        # V1.6.4: 首次调用时恢复未提交的 demand
+        if not self._recovery_done:
+            self._recovery_done = True
+            recovery_task = asyncio.create_task(self._recover_pending_demands())
+            self._background_tasks.add(recovery_task)
+            recovery_task.add_done_callback(self._background_tasks.discard)
 
         # V1.6.3: 获取 agent_id 作为 seeker_id（网络层身份，上云）
         agent_id = _get_agent_id()
@@ -184,6 +192,17 @@ class UniversalResourceGateway:
                     resource_type=task_ctx.resource_type,
                 )
                 self._task_cache.update_status(demand_id, "failed")
+        context = {
+            "resource_type": getattr(error, "resource_type", "resource"),
+            "description": getattr(error, "description", ""),
+            "local_skills": self.config.get("local_skills", []),
+        }
+
+        result = await self._try_local_skills(context)
+        if result is not None:
+            return result
+
+        return await self._try_global_bounty(context)
 
     async def _try_local_skills(self, context: dict) -> Any:
         """
@@ -245,21 +264,22 @@ class UniversalResourceGateway:
         return file_path
 
     async def _publish_to_hub(self, ticket: DemandTicket) -> None:
-        """Best-effort publish of a demand ticket to Hub."""
+        """Publish a demand ticket to Hub with retry and confirmation.
+
+        V1.6.4 优化:
+        - 指数退避重试（3次）
+        - 提交成功后更新 TaskCache 状态
+        - 提交失败保留本地记录，等待下次恢复
+        """
         print("[DEBUG-PUBLISH] >>> ENTER _publish_to_hub")
         url = f"{HUB_URL}{API_V1_PREFIX}/pending_demands"
-        print(f"[DEBUG-PUBLISH] HUB_URL: {HUB_URL}")
-        print(f"[DEBUG-PUBLISH] API_V1_PREFIX: {API_V1_PREFIX}")
         print(f"[DEBUG-PUBLISH] Final URL: {url}")
 
-        # 👈 [核心变更] 组装绝对公网收货地址
+        # 组装绝对公网收货地址
         if self.public_base_url:
             webhook_url = f"{self.public_base_url}/api/webhook/delivery"
         else:
-            webhook_url = ""  # 兜底：空字符串
-
-        print(f"[DEBUG-PUBLISH] public_base_url: {self.public_base_url}")
-        print(f"[DEBUG-PUBLISH] webhook_url: {webhook_url}")
+            webhook_url = ""
 
         payload = {
             "demand_id": ticket.demand_id,
@@ -267,21 +287,74 @@ class UniversalResourceGateway:
             "description": ticket.description,
             "tags": ticket.tags,
             "seeker_id": ticket.seeker_id,
-            "seeker_webhook_url": webhook_url,  # 👈 [新增] 随订单提交
+            "seeker_webhook_url": webhook_url,
             "created_at": ticket.created_at,
         }
         print(f"[DEBUG-PUBLISH] payload: {payload}")
-        try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                response = await client.post(url, json=payload)
-                print(f"[DEBUG-PUBLISH] Response status code: {response.status_code}")
-                print(f"[DEBUG-PUBLISH] Response body: {response.text}")
-        except Exception as e:
-            # Hub may not support pending_demands yet; ignore for now
-            print(f"[DEBUG-PUBLISH] Exception occurred: {e}")
-            import traceback
-            traceback.print_exc()
-            pass
+
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    response = await client.post(url, json=payload)
+                    if response.status_code == 200:
+                        data = response.json()
+                        print(f"[PUBLISH-OK] demand_id={ticket.demand_id} submitted to Hub (attempt {attempt + 1})")
+                        # 标记为已提交
+                        self._task_cache.mark_hub_submitted(ticket.demand_id)
+                        return
+                    else:
+                        print(f"[PUBLISH-WARN] Hub returned {response.status_code}: {response.text}")
+            except Exception as e:
+                print(f"[PUBLISH-RETRY] attempt {attempt + 1}/{max_retries} failed: {e}")
+
+            if attempt < max_retries - 1:
+                wait_time = 2 ** attempt  # 1s, 2s, 4s
+                print(f"[PUBLISH-RETRY] waiting {wait_time}s before retry...")
+                await asyncio.sleep(wait_time)
+
+        print(f"[PUBLISH-FAIL] demand_id={ticket.demand_id} failed after {max_retries} attempts. Saved locally for recovery.")
+
+    async def _recover_pending_demands(self) -> None:
+        """V1.6.4: 启动时恢复未成功提交到 Hub 的 demand。
+
+        扫描 TaskCache 中 status=pending 且 hub_submitted=False 的记录，
+        重新提交到 Hub，确保不丢失。
+        """
+        unsubmitted = self._task_cache.get_unsubmitted_demands()
+        if not unsubmitted:
+            return
+
+        print(f"[RECOVERY] Found {len(unsubmitted)} unsubmitted demand(s), resubmitting...")
+
+        for task_ctx in unsubmitted:
+            # 检查是否过期（超过 60 分钟的不再重提）
+            try:
+                from datetime import datetime, timedelta
+                created = datetime.fromisoformat(task_ctx.created_at)
+                if datetime.utcnow() - created > timedelta(hours=24):
+                    print(f"[RECOVERY] Skipping expired demand: {task_ctx.demand_id}")
+                    self._task_cache.update_status(task_ctx.demand_id, "failed",
+                                                   error_message="Hub submission timeout")
+                    continue
+            except Exception:
+                pass
+
+            # 重建 ticket 并重新提交
+            from .demand_generator import DemandTicket
+            ticket = DemandTicket(
+                demand_id=task_ctx.demand_id,
+                resource_type=task_ctx.resource_type,
+                description=task_ctx.description,
+                tags=[],  # tags 不在 TaskContext 中
+                created_at=task_ctx.created_at,
+                seeker_id=task_ctx.user_id,
+            )
+
+            print(f"[RECOVERY] Resubmitting demand: {task_ctx.demand_id}")
+            await self._publish_to_hub(ticket)
+
+        print("[RECOVERY] Recovery complete.")
 
     def trigger_delivery(self, demand_id: str, file_path: str) -> None:
         if demand_id in self._delivery_events:

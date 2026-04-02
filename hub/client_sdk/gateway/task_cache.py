@@ -38,6 +38,7 @@ class TaskContext:
     error_message: Optional[str] = None
     provider_id: Optional[str] = None
     completed_at: Optional[str] = None
+    hub_submitted: bool = False  # V1.6.4: 是否已成功提交到 Hub
 
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization."""
@@ -53,6 +54,7 @@ class TaskContext:
             "error_message": self.error_message,
             "provider_id": self.provider_id,
             "completed_at": self.completed_at,
+            "hub_submitted": self.hub_submitted,
         }
 
     @classmethod
@@ -312,6 +314,23 @@ class TaskCache:
                         deleted += 1
 
         return deleted
+
+    def mark_hub_submitted(self, demand_id: str) -> None:
+        """Mark a task as successfully submitted to Hub."""
+        task_ctx = self.get_task(demand_id)
+        if task_ctx is None:
+            return
+        task_ctx.hub_submitted = True
+        cache_file = self._cache_dir / f"{demand_id}.json"
+        with open(cache_file, "w", encoding="utf-8") as f:
+            json.dump(task_ctx.to_dict(), f, indent=2, ensure_ascii=False)
+
+    def get_unsubmitted_demands(self) -> list[TaskContext]:
+        """Find pending demands that were never submitted to Hub."""
+        return [
+            t for t in self.list_tasks(status="pending")
+            if not t.hub_submitted
+        ]
 
 
 __all__ = ["TaskContext", "TaskCache"]

@@ -457,10 +457,7 @@ async def handle_supply_announcement(agent_id: str, payload: dict):
     # 格式化返回结果 - V1.6: 添加 match_token
     results = []
     for demand in matched_demands:
-        # 标记为已匹配
-        repo.mark_matched(demand.demand_id, agent_id)
-
-        # V1.6: 为每个匹配签发 match_token
+        # 🔑 V1.6: 为每个匹配签发 match_token
         match_token = jwt_service.issue_match_token(
             seeker_id=demand.seeker_id or "unknown",
             provider_id=agent_id,
@@ -473,7 +470,7 @@ async def handle_supply_announcement(agent_id: str, payload: dict):
             "description": demand.description,
             "tags": demand.tags,
             "seeker_webhook_url": demand.seeker_webhook_url,
-            "match_token": match_token
+            "match_token": match_token  # ← V1.6 新增！
         })
 
     return {"matched_demands": results}
