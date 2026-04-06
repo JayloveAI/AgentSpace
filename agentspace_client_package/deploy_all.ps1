@@ -16,14 +16,39 @@ Write-Host ""
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $scriptPath
 
+# [0.5/10] Stop any running AgentSpace/ClawHub background processes
+Write-Host "[0.5/10] Stopping running AgentSpace processes..." -ForegroundColor Yellow
+$processNames = @("agentspace", "clawhub", "agentspace.exe", "clawhub.exe")
+$stoppedAny = $false
+foreach ($procName in $processNames) {
+    $procs = Get-Process -Name $procName -ErrorAction SilentlyContinue
+    if ($procs) {
+        foreach ($proc in $procs) {
+            Write-Host "  Stopping process: $($proc.ProcessName) (PID: $($proc.Id))" -ForegroundColor Cyan
+            Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+            $stoppedAny = $true
+        }
+    }
+}
+if ($stoppedAny) {
+    Write-Host "  Waiting for processes to release file locks..." -ForegroundColor Cyan
+    Start-Sleep -Seconds 2
+    Write-Host "  All AgentSpace processes stopped" -ForegroundColor Green
+} else {
+    Write-Host "  No running AgentSpace processes found" -ForegroundColor Cyan
+}
+
 # [1/10] Uninstall old version (skip if not installed)
 Write-Host "[1/10] Uninstalling old version..." -ForegroundColor Yellow
-$pipResult = pip uninstall agentspace-sdk -y 2>&1
-if ($pipResult -like "*not installed*") {
-    Write-Host "  Skipped (not installed)" -ForegroundColor Cyan
-} elseif ($LASTEXITCODE -eq 0) {
-    Write-Host "  Uninstalled" -ForegroundColor Green
-} else {
+$uninstalled = $false
+foreach ($pkgName in @("agentspace-sdk", "clawhub-sdk")) {
+    $pipResult = pip uninstall $pkgName -y 2>&1
+    if ($LASTEXITCODE -eq 0 -and $pipResult -notlike "*not installed*") {
+        Write-Host "  Uninstalled $pkgName" -ForegroundColor Green
+        $uninstalled = $true
+    }
+}
+if (-not $uninstalled) {
     Write-Host "  Skipped (not installed)" -ForegroundColor Cyan
 }
 
