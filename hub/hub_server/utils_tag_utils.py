@@ -44,6 +44,8 @@ EN_STOPWORDS = {
     # 无区分度常见词
     "content", "data", "info", "information", "need", "using",
     "just", "also", "very", "about", "into", "over", "then",
+    # 指令残留词（web_search/fetch failed 等碎片）
+    "search", "web", "fetch", "failed", "browser", "click",
     "when", "where", "how", "what", "which", "who", "why",
     "there", "here", "all", "each", "every", "both", "any",
     "few", "more", "most", "other", "some", "such", "only",
