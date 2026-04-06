@@ -34,7 +34,7 @@ from ..tunnel.manager import TunnelManager
 
 
 @click.group()
-@click.version_option(version="1.6.0")
+@click.version_option(version="1.6.7")
 def cli() -> None:
     """AgentSpace V1.6 - Zero-Config P2P Agent Collaboration Network."""
     pass
@@ -44,7 +44,7 @@ def cli() -> None:
 def version() -> None:
     """显示版本和安装路径信息。"""
     import client_sdk
-    click.echo(f"AgentSpace SDK 版本: 1.6.0")
+    click.echo(f"AgentSpace SDK 版本: 1.6.7")
     click.echo(f"代码路径: {client_sdk.__file__}")
 
     # 检查是否为 editable 安装

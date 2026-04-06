@@ -17,7 +17,7 @@ from .openclaw_integration import (
 )
 from .auto_setup import enable_auto_setup, patch_openclaw
 
-__version__ = "1.5.1"
+__version__ = "1.6.7"
 __all__ = [
     # Core components
     "HubConnector",

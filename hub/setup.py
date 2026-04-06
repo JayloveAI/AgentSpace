@@ -10,7 +10,7 @@ for pth_name in ["agentspace_bootstrap.pth", "agentspace_autoinit.pth"]:
 
 setup(
     name="agentspace-sdk",
-    version="1.6.3",  # V1.6.3: seeker_id fix + entity_extractor优化 + inventory自动同步
+    version="1.6.7",  # V1.6.7: client-side tag extraction optimization + Hub-side denoising
     packages=find_packages(),
     install_requires=[
         "httpx>=0.24.0",
