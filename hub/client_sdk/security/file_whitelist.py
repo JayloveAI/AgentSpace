@@ -9,7 +9,12 @@ class FileExtensionWhitelist:
     """Simple file extension allowlist."""
 
     DEFAULT_ALLOWED = {".csv", ".json", ".xlsx", ".pdf", ".txt", ".md", ".docx", ".pptx",
-                     ".db", ".sqlite", ".sqlite3", ".mdb", ".accdb", ".xml"}
+                     ".db", ".sqlite", ".sqlite3", ".mdb", ".accdb", ".xml",
+                     # V1.6.7: 多模态文件类型支持
+                     ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".svg",
+                     ".mp3", ".wav", ".mp4", ".avi", ".mkv", ".mov",
+                     ".zip", ".tar", ".gz", ".rar", ".7z",
+                     ".py", ".js", ".ts", ".html", ".css", ".yaml", ".yml", ".toml"}
 
     def __init__(self, allowed: Iterable[str] | None = None):
         if allowed is not None:
