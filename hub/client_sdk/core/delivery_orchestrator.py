@@ -1,8 +1,10 @@
 """Delivery Orchestrator - Coordinate file delivery to matched seekers."""
 import asyncio
+import os
 from pathlib import Path
 from typing import List, Dict
 from ..webhook.sender import P2PSender
+from ..core.transfer_strategy import select_strategy, estimate_timeout
 
 
 class DeliveryOrchestrator:
@@ -19,17 +21,18 @@ class DeliveryOrchestrator:
         file_path: str,
         matched_demands: List[Dict]
     ) -> Dict[str, bool]:
-        """
-        并发投递文件到所有匹配的 Seeker
-
-        ⚠️ 修正：使用 asyncio.gather 实现真正的并发投递
-        """
+        """并发投递文件到所有匹配的 Seeker"""
         results = {}
         tasks = []
         valid_demands = []
 
+        # 日志：策略选择
+        strategy = select_strategy(file_path)
+        file_size = os.path.getsize(file_path)
+        file_name = os.path.basename(file_path)
+        print(f"[TRANSFER] Strategy={strategy} for {file_name} ({file_size / (1024*1024):.1f} MB)")
+
         for demand in matched_demands:
-            # 验证文件类型匹配
             resource_type = demand.get("resource_type", "")
             file_suffix = Path(file_path).suffix[1:]
 
@@ -39,13 +42,12 @@ class DeliveryOrchestrator:
                 continue
 
             valid_demands.append(demand)
-            coro = self._deliver_single_file_with_timeout(file_path, demand)
+            coro = self._deliver_single_file_with_timeout(file_path, demand, strategy, file_size)
             tasks.append(coro)
 
         if not tasks:
             return results
 
-        # ⚠️ 关键修正：并发执行所有投递任务
         completed_results = await asyncio.gather(*tasks, return_exceptions=True)
 
         for demand, res in zip(valid_demands, completed_results):
@@ -57,25 +59,32 @@ class DeliveryOrchestrator:
 
         return results
 
-    async def _deliver_single_file_with_timeout(self, file_path: str, demand: Dict) -> bool:
-        """单个文件投递（带超时）"""
+    async def _deliver_single_file_with_timeout(
+        self, file_path: str, demand: Dict, strategy: str = None, file_size: int = 0
+    ) -> bool:
+        """单个文件投递（自适应超时）"""
+        if strategy is None:
+            strategy = select_strategy(file_path)
+        timeout = estimate_timeout(file_size or os.path.getsize(file_path), strategy)
+
         try:
             return await asyncio.wait_for(
                 self._deliver_single_file(file_path, demand),
-                timeout=60.0
+                timeout=timeout
             )
         except asyncio.TimeoutError:
-            print(f"[TIMEOUT] Delivery timed out for {demand['demand_id']}")
+            print(f"[TIMEOUT] Delivery timed out for {demand['demand_id']} (timeout={timeout:.0f}s)")
             return False
 
     async def _deliver_single_file(self, file_path: str, demand: Dict) -> bool:
-        """投递文件到单个 Seeker（带重试）"""
+        """投递文件到单个 Seeker（带重试 + 策略分发）"""
         demand_id = demand["demand_id"]
         max_retries = 3
 
         for attempt in range(max_retries):
             try:
-                success = await self.sender.send_file_to_seeker(
+                # V1.6.7: 使用 deliver_file 自动选择策略
+                success = await self.sender.deliver_file(
                     matched_demand=demand,
                     file_path=file_path,
                     provider_id=self.agent_id
@@ -89,10 +98,8 @@ class DeliveryOrchestrator:
             except Exception as e:
                 print(f"[ERROR] Delivery attempt {attempt + 1} failed: {e}")
 
-            # 指数退避
             await asyncio.sleep(2 ** attempt)
 
-        # 记录失败
         self._failed_deliveries[demand_id] = {
             "file_path": file_path,
             "demand": demand

@@ -65,6 +65,13 @@ FRP_SERVER_ADDR = os.getenv("FRP_SERVER_ADDR", "")
 FRP_SERVER_PORT = int(os.getenv("FRP_SERVER_PORT", "7000"))
 FRP_EXECUTABLE = os.getenv("FRP_EXECUTABLE", "frpc")
 
+# Cloudflare R2 Storage (V1.6.7: 大文件中转)
+R2_ACCOUNT_ID = os.getenv("R2_ACCOUNT_ID", "")
+R2_ACCESS_KEY = os.getenv("R2_ACCESS_KEY", "")
+R2_SECRET_KEY = os.getenv("R2_SECRET_KEY", "")
+R2_BUCKET = os.getenv("R2_BUCKET", "agent-space-transfer")
+R2_PUBLIC_URL = os.getenv("R2_PUBLIC_URL", "")
+
 
 def get_region() -> str:
     region = os.getenv("AGENTSPACE_REGION", AGENTSPACE_REGION).lower()

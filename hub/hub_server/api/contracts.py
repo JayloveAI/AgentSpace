@@ -379,3 +379,18 @@ class P2PDeliveryRequest(BaseModel):
     demand_id: str
     provider_id: Optional[str] = None
     files: List[P2PDeliveryFile]
+
+
+class P2PDeliveryLinkRequest(BaseModel):
+    """P2P delivery via external storage link (Strategy C).
+
+    V1.6.7: 用于大文件 R2 中转投递，接收端后台异步下载。
+    """
+    demand_id: str
+    provider_id: Optional[str] = None
+    filename: str
+    download_url: str
+    file_size: int = 0
+    checksum_sha256: Optional[str] = None
+    aes_key: Optional[str] = None       # base64 AES-256 key
+    encrypted: bool = False

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import secrets
 from datetime import datetime
@@ -10,7 +11,7 @@ from pathlib import Path
 from typing import Callable
 
 import jwt
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, HTTPException, Request, status, Form, File, UploadFile, BackgroundTasks
 from fastapi.responses import JSONResponse
 
 from ..config import HUB_JWT_SECRET, HUB_URL, API_V1_PREFIX
@@ -304,6 +305,200 @@ class WebhookServer:
                 )
 
             return {"status": "received", "demand_id": demand_id}
+
+        @self.app.post("/api/webhook/delivery/stream")
+        async def receive_stream_delivery(
+            demand_id: str = Form(...),
+            provider_id: str = Form(""),
+            file: UploadFile = File(...),
+        ):
+            """
+            Strategy B: 分块流式接收端点
+
+            接收 multipart/form-data 流式上传，
+            原子化写入 .downloading 临时文件，完成后 rename。
+            """
+
+            whitelist = FileExtensionWhitelist()
+            inbox_dir = Path.home() / ".agentspace" / "demand_inbox"
+            inbox_dir.mkdir(parents=True, exist_ok=True)
+            from client_sdk.core.transfer_strategy import CHUNK_SIZE
+
+            filename = file.filename or "unknown"
+            allowed, error = whitelist.validate_file(filename)
+            if not allowed:
+                raise HTTPException(status_code=403, detail=error)
+
+            # 原子化写入：先写 .downloading 临时文件
+            dest_path = inbox_dir / filename
+            tmp_path = dest_path.with_suffix(dest_path.suffix + ".downloading")
+
+            try:
+                import shutil
+                with open(tmp_path, "wb") as f:
+                    while chunk := await file.read(CHUNK_SIZE):
+                        f.write(chunk)
+
+                # 原子 rename
+                if tmp_path.exists():
+                    tmp_path.rename(dest_path)
+
+                # 保存元数据
+                meta_file = inbox_dir / f"task_{demand_id}_meta.json"
+                meta_content = {
+                    "demand_id": demand_id,
+                    "filename": filename,
+                    "file_path": str(dest_path),
+                    "received_at": datetime.utcnow().isoformat(),
+                    "provider_id": provider_id,
+                    "file_size": dest_path.stat().st_size if dest_path.exists() else 0,
+                    "transfer_mode": "stream",
+                }
+                with open(meta_file, "w", encoding="utf-8") as f:
+                    json.dump(meta_content, f, indent=2, ensure_ascii=False)
+
+                # 触发通知
+                if _gateway_instance:
+                    _gateway_instance.trigger_delivery(demand_id, str(dest_path))
+                if self._bridge:
+                    await self._bridge.notify_delivery(
+                        demand_id=demand_id,
+                        file_path=str(dest_path),
+                        provider_id=provider_id,
+                        resource_type=filename.rsplit(".", 1)[-1] if "." in filename else "",
+                    )
+
+                return {"status": "received", "demand_id": demand_id, "mode": "stream"}
+
+            except Exception as e:
+                # 清理脏数据
+                if tmp_path.exists():
+                    tmp_path.unlink()
+                raise HTTPException(status_code=500, detail=str(e))
+
+        @self.app.post("/api/webhook/delivery/link")
+        async def receive_link_delivery(request: Request, background_tasks: BackgroundTasks):
+            """
+            Strategy C: R2 中转链接接收端点
+
+            收到下载链接后立刻返回 202 Accepted（防超时死锁），
+            后台异步下载 + AES 解密 + SHA-256 校验。
+            """
+            from client_sdk.core.transfer_strategy import CHUNK_SIZE, TransferProgress
+
+            data = await request.json()
+            demand_id = data.get("demand_id", "")
+            download_url = data.get("download_url", "")
+            filename = data.get("filename", "unknown")
+            file_size = data.get("file_size", 0)
+            checksum = data.get("checksum_sha256", "")
+            aes_key_b64 = data.get("aes_key")
+            encrypted = data.get("encrypted", False)
+
+            if not download_url:
+                raise HTTPException(status_code=400, detail="Missing download_url")
+
+            async def _download_and_process():
+                """后台任务：下载 + 解密 + 校验 + 通知"""
+                from client_sdk.core.r2_storage import get_r2_storage
+
+                inbox_dir = Path.home() / ".agentspace" / "demand_inbox"
+                inbox_dir.mkdir(parents=True, exist_ok=True)
+
+                dest_path = inbox_dir / filename
+                tmp_path = dest_path.with_suffix(dest_path.suffix + ".downloading")
+
+                try:
+                    # 下载密文/原文件到临时路径
+                    import httpx
+                    progress = TransferProgress(max(file_size, 1), "R2 Download")
+
+                    with httpx.stream("GET", download_url, timeout=600.0, follow_redirects=True) as resp:
+                        resp.raise_for_status()
+                        with open(tmp_path, "wb") as f:
+                            for chunk in resp.iter_bytes(chunk_size=CHUNK_SIZE):
+                                f.write(chunk)
+                                progress.update(len(chunk))
+
+                    # AES 解密
+                    if encrypted and aes_key_b64:
+                        import base64
+                        from client_sdk.core.transfer_strategy import aes_key_to_bytes
+
+                        aes_key_bytes = aes_key_to_bytes(aes_key_b64)
+                        enc_path = tmp_path
+                        dec_path = tmp_path.with_suffix(tmp_path.suffix + ".dec")
+
+                        from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+                        with open(enc_path, "rb") as fin:
+                            nonce = fin.read(12)  # 前 12 字节是 nonce
+                            cipher = Cipher(
+                                algorithms.AES(aes_key_bytes),
+                                modes.CTR(nonce + (0).to_bytes(4, "big")),
+                            )
+                            decryptor = cipher.decryptor()
+                            with open(dec_path, "wb") as fout:
+                                while chunk := fin.read(CHUNK_SIZE):
+                                    fout.write(decryptor.update(chunk))
+                                final = decryptor.finalize()
+                                if final:
+                                    fout.write(final)
+
+                        # 替换为解密后的文件
+                        enc_path.unlink()
+                        dec_path.rename(tmp_path)
+
+                    # SHA-256 校验
+                    if checksum:
+                        h = hashlib.sha256()
+                        with open(tmp_path, "rb") as f:
+                            while chunk := f.read(CHUNK_SIZE):
+                                h.update(chunk)
+                        actual = h.hexdigest()
+                        if actual != checksum:
+                            print(f"[ERROR] SHA-256 mismatch: expected {checksum[:12]}..., got {actual[:12]}...")
+                            tmp_path.unlink()
+                            return
+                        print(f"[OK] SHA-256 verified: {actual[:12]}...")
+
+                    # 原子 rename
+                    tmp_path.rename(dest_path)
+
+                    # 保存元数据
+                    meta_file = inbox_dir / f"task_{demand_id}_meta.json"
+                    meta_content = {
+                        "demand_id": demand_id,
+                        "filename": filename,
+                        "file_path": str(dest_path),
+                        "received_at": datetime.utcnow().isoformat(),
+                        "provider_id": data.get("provider_id", ""),
+                        "file_size": dest_path.stat().st_size if dest_path.exists() else 0,
+                        "transfer_mode": "r2_link",
+                        "encrypted": encrypted,
+                    }
+                    with open(meta_file, "w", encoding="utf-8") as f:
+                        json.dump(meta_content, f, indent=2, ensure_ascii=False)
+
+                    # 触发通知
+                    if _gateway_instance:
+                        _gateway_instance.trigger_delivery(demand_id, str(dest_path))
+                    if self._bridge:
+                        await self._bridge.notify_delivery(
+                            demand_id=demand_id,
+                            file_path=str(dest_path),
+                            provider_id=data.get("provider_id", ""),
+                            resource_type=filename.rsplit(".", 1)[-1] if "." in filename else "",
+                        )
+
+                    print(f"[OK] R2 delivery complete: {filename}")
+
+                except Exception as e:
+                    print(f"[ERROR] R2 download failed: {e}")
+                    if tmp_path.exists():
+                        tmp_path.unlink()
+
+            background_tasks.add_task(_download_and_process)
+            return {"status": "accepted", "demand_id": demand_id, "mode": "r2_link"}
 
         @self.app.post("/api/webhook/signal")
         async def receive_hub_signal(signal_data: dict):
