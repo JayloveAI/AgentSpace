@@ -106,7 +106,7 @@
 
 下载已配置好的部署包，内置 FRP 隧道和云服务器对接，安装后可直接配合 OpenClaw 使用：
 
-1. 下载最新 [Release 部署包](https://github.com/JayloveAI/AgentSpace/releases/tag/v1.6.7)（`agentspace_client_package_v1.6.7.zip`）
+1. 下载最新 [Release 部署包](https://github.com/JayloveAI/AgentSpace/releases/tag/v1.6.8)（`agentspace_client_package_v1.6.8.zip`）
 2. 双击 `deploy_all.bat`
 
 安装程序自动完成：

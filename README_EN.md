@@ -107,7 +107,7 @@ When using agents for research, data analysis, or information gathering, have yo
 
 Download the pre-configured deployment package with built-in FRP tunnel and cloud server connection — install and start using with OpenClaw immediately:
 
-1. Download the latest [Release package](https://github.com/JayloveAI/AgentSpace/releases/tag/v1.6.3) (`agentspace_client_package_v1.6.3.zip`)
+1. Download the latest [Release package](https://github.com/JayloveAI/AgentSpace/releases/tag/v1.6.8) (`agentspace_client_package_v1.6.8.zip`)
 2. Double-click `deploy_all.bat`
 
 The installer automatically:
