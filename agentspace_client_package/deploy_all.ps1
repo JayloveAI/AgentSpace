@@ -199,9 +199,32 @@ if (-not (Test-Path $frpDir)) {
 }
 
 $frpcExe = Join-Path $frpDir "frpc.exe"
+$frpVersionOk = $false
 
 if (Test-Path $frpcExe) {
-    Write-Host "  FRP already installed: $frpcExe" -ForegroundColor Green
+    # V1.6.8: check FRP version — old versions (< 0.53) cannot read TOML config, must replace
+    try {
+        $verOutput = & $frpcExe -v 2>&1
+        $verStr = $verOutput.ToString().Trim()
+        if ($verStr -match '^0\.(\d+)\.') {
+            $minor = [int]$Matches[1]
+            if ($minor -ge 53) {
+                $frpVersionOk = $true
+                Write-Host "  FRP $verStr already installed: $frpcExe" -ForegroundColor Green
+            } else {
+                Write-Host "  FRP $verStr is too old (need 0.53+), replacing..." -ForegroundColor DarkYellow
+            }
+        } else {
+            $frpVersionOk = $true
+            Write-Host "  FRP already installed: $frpcExe" -ForegroundColor Green
+        }
+    } catch {
+        Write-Host "  Cannot check FRP version, replacing to ensure compatibility..." -ForegroundColor DarkYellow
+    }
+}
+
+if ($frpVersionOk) {
+    # Correct version, skip download
 } else {
     # Download options: ordered by speed (fastest first for China)
     # Download mirrors: ordered by reliability and speed
@@ -259,6 +282,14 @@ if (Test-Path $frpcExe) {
     # Extract
     Write-Host "  Extracting files..." -ForegroundColor Cyan
     try {
+        # Stop frpc process if running (locked file prevents overwrite)
+        $frpcProc = Get-Process -Name "frpc" -ErrorAction SilentlyContinue
+        if ($frpcProc) {
+            Write-Host "  Stopping running frpc process..." -ForegroundColor DarkYellow
+            Stop-Process -Name "frpc" -Force -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 1
+        }
+
         Expand-Archive -Path $zipFile -DestinationPath $frpDir -Force
 
         $sourceExe = Join-Path $frpDir "frp_0.53.2_windows_amd64\frpc.exe"
